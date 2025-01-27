@@ -68,38 +68,37 @@ def get_schema(connection_id):
 def get_doctypes(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
     try:
-        # First try with API key authentication
-        headers = {
-            'Authorization': f'token {conn.api_key}:{conn.api_secret}'
-        } if conn.api_key and conn.api_secret else None
-
-        # Use the Resource API to get doctypes
+        # Try to get doctypes using the desktop API endpoint
         response = requests.get(
-            f"{conn.url}/api/resource/DocType",
-            params={
-                'fields': '["name", "module"]',
-                'limit': 100000
-            },
-            headers=headers
+            f"{conn.url}/api/method/frappe.desk.desktop.get_doctypes",
+            headers={
+                'Authorization': f'token {conn.api_key}:{conn.api_secret}'
+            } if conn.api_key and conn.api_secret else None,
+            cookies={
+                'user_id': conn.username,
+                'sid': conn.api_key if conn.api_key else ''
+            }
         )
-        data = response.json()
-        print(data)  # Debug print to see the response
 
-        if 'data' in data:
-            # Extract doctype names from the response
-            doctypes = [doc['name'] for doc in data.get('data', [])]
-            return jsonify({"message": sorted(doctypes)})
-        else:
-            # Try alternative authentication method
-            alt_response = requests.get(
-                f"{conn.url}/api/method/frappe.desk.reportview.get_doctypes",
-                auth=(conn.username, conn.api_key)
-            )
-            alt_data = alt_response.json()
-            if 'message' in alt_data:
-                return jsonify({"message": sorted(alt_data['message'])})
+        if response.ok:
+            data = response.json()
+            if 'message' in data:
+                return jsonify({"message": sorted(data['message'])})
 
-        return jsonify({"status": "error", "message": "Unable to fetch doctypes"}), 400
+        # Fallback to basic authentication if token auth fails
+        basic_auth_response = requests.get(
+            f"{conn.url}/api/method/frappe.desk.desktop.get_doctypes",
+            auth=(conn.username, conn.api_key if conn.api_key else '')
+        )
+
+        if basic_auth_response.ok:
+            data = basic_auth_response.json()
+            if 'message' in data:
+                return jsonify({"message": sorted(data['message'])})
+
+        logging.error(f"Failed to fetch doctypes. Response: {response.text}")
+        return jsonify({"status": "error", "message": "Unable to fetch doctypes. Please check your credentials."}), 400
+
     except Exception as e:
         logging.error(f"Error getting doctypes: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
