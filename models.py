@@ -1,6 +1,7 @@
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+import requests
 
 class ImportJob(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,5 +28,24 @@ class FrappeConnection(db.Model):
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-        # Store API credentials for Frappe server calls
-        self.api_key = password  # Temporarily store password for API calls
+        # Get API key and secret from Frappe
+        try:
+            # First authenticate with username/password
+            auth_response = requests.post(
+                f"{self.url}/api/method/frappe.auth.get_logged_user",
+                auth=(self.username, password)
+            )
+            if auth_response.ok:
+                # Get API key and secret
+                key_response = requests.post(
+                    f"{self.url}/api/method/frappe.core.doctype.user.user.generate_keys",
+                    auth=(self.username, password)
+                )
+                if key_response.ok:
+                    data = key_response.json()
+                    self.api_key = data.get('message', {}).get('api_key')
+                    self.api_secret = data.get('message', {}).get('api_secret')
+        except Exception as e:
+            # If API key generation fails, fall back to password authentication
+            self.api_key = None
+            self.api_secret = None

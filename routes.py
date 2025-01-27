@@ -68,6 +68,11 @@ def get_schema(connection_id):
 def get_doctypes(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
     try:
+        # First try with API key authentication
+        headers = {
+            'Authorization': f'token {conn.api_key}:{conn.api_secret}'
+        } if conn.api_key and conn.api_secret else None
+
         # Use the Resource API to get doctypes
         response = requests.get(
             f"{conn.url}/api/resource/DocType",
@@ -75,7 +80,7 @@ def get_doctypes(connection_id):
                 'fields': '["name", "module"]',
                 'limit': 100000
             },
-            auth=(conn.username, conn.api_key)  # Use stored API key
+            headers=headers
         )
         data = response.json()
         print(data)  # Debug print to see the response
