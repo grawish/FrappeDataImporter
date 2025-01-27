@@ -11,6 +11,9 @@ class ImportJob(db.Model):
     total_rows = db.Column(db.Integer, default=0)
     processed_rows = db.Column(db.Integer, default=0)
     error_message = db.Column(db.Text)
+    batch_size = db.Column(db.Integer, default=100)
+    current_batch = db.Column(db.Integer, default=0)
+    file_path = db.Column(db.String(512))  # Store uploaded file path
 
 class FrappeConnection(db.Model):
     id = db.Column(db.Integer, primary_key=True)

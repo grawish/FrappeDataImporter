@@ -6,6 +6,8 @@ function ImportProgress({ jobId }) {
     status: 'processing',
     processed_rows: 0,
     total_rows: 0,
+    current_batch: 0,
+    total_batches: 0,
     error_message: null
   });
 
@@ -14,7 +16,7 @@ function ImportProgress({ jobId }) {
       try {
         const response = await getImportStatus(jobId);
         setStatus(response);
-        
+
         if (response.status !== 'completed' && response.status !== 'failed') {
           setTimeout(checkStatus, 2000);
         }
@@ -39,7 +41,7 @@ function ImportProgress({ jobId }) {
     <div className="card">
       <div className="card-body">
         <h3>Import Progress</h3>
-        
+
         <div className="progress mb-3">
           <div 
             className="progress-bar" 
@@ -56,7 +58,8 @@ function ImportProgress({ jobId }) {
         <div className="status-details">
           <p>Status: {status.status}</p>
           <p>Processed: {status.processed_rows} / {status.total_rows} rows</p>
-          
+          <p>Current Batch: {status.current_batch} / {status.total_batches}</p>
+
           {status.error_message && (
             <div className="alert alert-danger">
               {status.error_message}

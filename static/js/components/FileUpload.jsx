@@ -5,6 +5,7 @@ function FileUpload({ connectionId, onUpload }) {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
+  const [batchSize, setBatchSize] = useState(100);
 
   const acceptedFormats = {
     'csv': 'text/csv',
@@ -60,7 +61,12 @@ function FileUpload({ connectionId, onUpload }) {
     }
 
     try {
-      const response = await uploadFile(file, connectionId);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('connection_id', connectionId);
+      formData.append('batch_size', batchSize);
+
+      const response = await uploadFile(formData, connectionId);
       if (response.status === 'success') {
         onUpload(response.job_id);
       } else {
@@ -76,6 +82,20 @@ function FileUpload({ connectionId, onUpload }) {
       <div className="card-body">
         <h3>Upload Data File</h3>
         {error && <div className="alert alert-danger">{error}</div>}
+
+        <div className="mb-3">
+          <label className="form-label">Batch Size</label>
+          <input
+            type="number"
+            className="form-control"
+            value={batchSize}
+            onChange={(e) => setBatchSize(Math.max(1, parseInt(e.target.value) || 1))}
+            min="1"
+          />
+          <small className="form-text text-muted">
+            Number of records to process in each batch
+          </small>
+        </div>
 
         <div 
           className={`upload-area ${dragging ? 'dragging' : ''}`}
