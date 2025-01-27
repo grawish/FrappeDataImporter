@@ -39,17 +39,18 @@ def get_schema(connection_id):
         return jsonify({"status": "error", "message": "Doctype is required"}), 400
 
     try:
-        # Use Resource API to get doctype fields
+        # Use Frappe's built-in method to get doctype metadata
         response = requests.get(
-            f"{conn.url}/api/resource/DocType/{doctype}",
+            f"{conn.url}/api/method/frappe.desk.form.load.get_meta",
+            params={"doctype": doctype},
             auth=(conn.username, conn.password_hash)
         )
-        doctype_data = response.json()
+        meta_data = response.json()
 
         # Extract relevant field information
         fields = []
-        if 'data' in doctype_data:
-            for field in doctype_data['data'].get('fields', []):
+        if 'docs' in meta_data:
+            for field in meta_data['docs'][0].get('fields', []):
                 fields.append({
                     'fieldname': field.get('fieldname'),
                     'label': field.get('label'),
