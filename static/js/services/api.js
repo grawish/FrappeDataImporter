@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = window.location.origin + '/api';
 
 export async function connectToFrappe(credentials) {
   const response = await fetch(`${API_BASE_URL}/connect`, {
@@ -6,13 +6,16 @@ export async function connectToFrappe(credentials) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(credentials)
   });
   return response.json();
 }
 
 export async function getSchema(connectionId) {
-  const response = await fetch(`${API_BASE_URL}/schema/${connectionId}`);
+  const response = await fetch(`${API_BASE_URL}/schema/${connectionId}`, {
+    credentials: 'include'
+  });
   return response.json();
 }
 
@@ -23,6 +26,7 @@ export async function uploadFile(file, connectionId) {
 
   const response = await fetch(`${API_BASE_URL}/upload`, {
     method: 'POST',
+    credentials: 'include',
     body: formData
   });
   return response.json();
@@ -34,12 +38,15 @@ export async function startImport(jobId, mapping) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify({ mapping })
   });
   return response.json();
 }
 
 export async function getImportStatus(jobId) {
-  const response = await fetch(`${API_BASE_URL}/status/${jobId}`);
+  const response = await fetch(`${API_BASE_URL}/status/${jobId}`, {
+    credentials: 'include'
+  });
   return response.json();
 }
