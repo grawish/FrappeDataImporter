@@ -7,6 +7,7 @@ import requests
 import os
 import json
 from werkzeug.utils import secure_filename
+import logging
 
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
@@ -22,9 +23,9 @@ def connect_frappe():
     try:
         conn = FrappeConnection(
             url=data['url'],
-            username=data['username'],
-            password_hash=generate_password_hash(data['password'])
+            username=data['username']
         )
+        conn.set_password(data['password'])
         db.session.add(conn)
         db.session.commit()
         return jsonify({"status": "success", "connection_id": conn.id})
@@ -43,7 +44,7 @@ def get_schema(connection_id):
         response = requests.get(
             f"{conn.url}/api/method/frappe.desk.form.load.get_meta",
             params={"doctype": doctype},
-            auth=(conn.username, conn.password_hash)
+            auth=(conn.username, conn.api_key)  # Use stored API key
         )
         meta_data = response.json()
 
@@ -60,6 +61,7 @@ def get_schema(connection_id):
 
         return jsonify({"fields": fields})
     except Exception as e:
+        logging.error(f"Error getting schema: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/api/doctypes/<connection_id>', methods=['GET'])
@@ -71,15 +73,30 @@ def get_doctypes(connection_id):
             f"{conn.url}/api/resource/DocType",
             params={
                 'fields': '["name", "module"]',
-                'limit_page_length': 'None'
+                'limit': 100000
             },
-            auth=(conn.username, conn.password_hash)
+            auth=(conn.username, conn.api_key)  # Use stored API key
         )
         data = response.json()
-        # Extract doctype names from the response
-        doctypes = [doc['name'] for doc in data.get('data', [])]
-        return jsonify({"message": sorted(doctypes)})
+        print(data)  # Debug print to see the response
+
+        if 'data' in data:
+            # Extract doctype names from the response
+            doctypes = [doc['name'] for doc in data.get('data', [])]
+            return jsonify({"message": sorted(doctypes)})
+        else:
+            # Try alternative authentication method
+            alt_response = requests.get(
+                f"{conn.url}/api/method/frappe.desk.reportview.get_doctypes",
+                auth=(conn.username, conn.api_key)
+            )
+            alt_data = alt_response.json()
+            if 'message' in alt_data:
+                return jsonify({"message": sorted(alt_data['message'])})
+
+        return jsonify({"status": "error", "message": "Unable to fetch doctypes"}), 400
     except Exception as e:
+        logging.error(f"Error getting doctypes: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/api/upload', methods=['POST'])
