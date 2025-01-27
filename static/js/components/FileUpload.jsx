@@ -61,19 +61,15 @@ function FileUpload({ connectionId, onUpload }) {
     }
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('connection_id', connectionId);
-      formData.append('batch_size', batchSize);
-
-      const response = await uploadFile(formData, connectionId);
+      const response = await uploadFile(file, connectionId);
       if (response.status === 'success') {
         onUpload(response.job_id);
       } else {
-        setError(response.message);
+        setError(response.message || 'Failed to upload file');
       }
     } catch (err) {
       setError('Failed to upload file');
+      console.error('Upload error:', err);
     }
   };
 

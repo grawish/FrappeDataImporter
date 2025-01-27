@@ -27,6 +27,7 @@ export async function uploadFile(file, connectionId) {
   const response = await fetch(`${API_BASE_URL}/upload`, {
     method: 'POST',
     credentials: 'include',
+    // Don't set Content-Type header, let the browser set it with the boundary
     body: formData
   });
   return response.json();
