@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
-import { uploadFile } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { uploadFile, getDoctypes } from '../services/api';
 
 function FileUpload({ connectionId, onUpload }) {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
   const [batchSize, setBatchSize] = useState(100);
+  const [doctypes, setDoctypes] = useState([]);
+  const [selectedDoctype, setSelectedDoctype] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchDoctypes = async () => {
+      try {
+        const response = await getDoctypes(connectionId);
+        if (response.message) {
+          setDoctypes(response.message);
+        }
+      } catch (err) {
+        console.error('Error fetching doctypes:', err);
+        setError('Failed to load doctypes');
+      }
+    };
+    fetchDoctypes();
+  }, [connectionId]);
 
   const acceptedFormats = {
     'csv': 'text/csv',
@@ -60,13 +78,19 @@ function FileUpload({ connectionId, onUpload }) {
       return;
     }
 
+    if (!selectedDoctype) {
+      setError('Please select a doctype');
+      return;
+    }
+
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('connection_id', connectionId);
       formData.append('batch_size', batchSize.toString());
       formData.append('frappe_url', 'https://demo.frappe.cloud'); // TODO: Get this from connection
-      formData.append('doctype', 'Item'); // TODO: Get this from user selection
+      formData.append('doctype', selectedDoctype);
 
       const response = await uploadFile(formData);
       if (response.status === 'success') {
@@ -77,6 +101,8 @@ function FileUpload({ connectionId, onUpload }) {
     } catch (err) {
       setError('Failed to upload file');
       console.error('Upload error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,6 +111,22 @@ function FileUpload({ connectionId, onUpload }) {
       <div className="card-body">
         <h3>Upload Data File</h3>
         {error && <div className="alert alert-danger">{error}</div>}
+
+        <div className="mb-3">
+          <label className="form-label">Select Doctype</label>
+          <select
+            className="form-select"
+            value={selectedDoctype}
+            onChange={(e) => setSelectedDoctype(e.target.value)}
+          >
+            <option value="">Choose a doctype...</option>
+            {doctypes.map((doctype) => (
+              <option key={doctype} value={doctype}>
+                {doctype}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="mb-3">
           <label className="form-label">Batch Size</label>
@@ -122,8 +164,9 @@ function FileUpload({ connectionId, onUpload }) {
             <button 
               className="btn btn-primary"
               onClick={handleUpload}
+              disabled={loading || !selectedDoctype}
             >
-              Upload and Continue
+              {loading ? 'Uploading...' : 'Upload and Continue'}
             </button>
           </div>
         )}

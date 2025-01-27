@@ -12,6 +12,13 @@ export async function connectToFrappe(credentials) {
   return response.json();
 }
 
+export async function getDoctypes(connectionId) {
+  const response = await fetch(`${API_BASE_URL}/doctypes/${connectionId}`, {
+    credentials: 'include'
+  });
+  return response.json();
+}
+
 export async function getSchema(connectionId) {
   const response = await fetch(`${API_BASE_URL}/schema/${connectionId}`, {
     credentials: 'include'

@@ -44,6 +44,18 @@ def get_schema(connection_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+@app.route('/api/doctypes/<connection_id>', methods=['GET'])
+def get_doctypes(connection_id):
+    conn = FrappeConnection.query.get_or_404(connection_id)
+    try:
+        response = requests.get(
+            f"{conn.url}/api/method/frappe.desk.form.load.get_doctypes",
+            auth=(conn.username, conn.password_hash)
+        )
+        return jsonify(response.json())
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
