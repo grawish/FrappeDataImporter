@@ -34,13 +34,30 @@ def connect_frappe():
 @app.route('/api/schema/<connection_id>', methods=['GET'])
 def get_schema(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
+    doctype = request.args.get('doctype')
+    if not doctype:
+        return jsonify({"status": "error", "message": "Doctype is required"}), 400
+
     try:
+        # Use Resource API to get doctype fields
         response = requests.get(
-            f"{conn.url}/api/method/frappe.desk.form.get_meta",
-            params={"doctype": request.args.get('doctype')},
+            f"{conn.url}/api/resource/DocType/{doctype}",
             auth=(conn.username, conn.password_hash)
         )
-        return jsonify(response.json())
+        doctype_data = response.json()
+
+        # Extract relevant field information
+        fields = []
+        if 'data' in doctype_data:
+            for field in doctype_data['data'].get('fields', []):
+                fields.append({
+                    'fieldname': field.get('fieldname'),
+                    'label': field.get('label'),
+                    'fieldtype': field.get('fieldtype'),
+                    'required': field.get('reqd', 0) == 1,
+                })
+
+        return jsonify({"fields": fields})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
@@ -48,11 +65,19 @@ def get_schema(connection_id):
 def get_doctypes(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
     try:
+        # Use the Resource API to get doctypes
         response = requests.get(
-            f"{conn.url}/api/method/frappe.desk.form.load.get_doctypes",
+            f"{conn.url}/api/resource/DocType",
+            params={
+                'fields': '["name", "module"]',
+                'limit_page_length': 'None'
+            },
             auth=(conn.username, conn.password_hash)
         )
-        return jsonify(response.json())
+        data = response.json()
+        # Extract doctype names from the response
+        doctypes = [doc['name'] for doc in data.get('data', [])]
+        return jsonify({"message": sorted(doctypes)})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
