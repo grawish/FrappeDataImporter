@@ -1,7 +1,10 @@
+import json
+
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
+
 
 class ImportJob(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -16,6 +19,7 @@ class ImportJob(db.Model):
     batch_size = db.Column(db.Integer, default=100)
     current_batch = db.Column(db.Integer, default=0)
     file_path = db.Column(db.String(512))  # Store uploaded file path
+
 
 class FrappeConnection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,20 +36,22 @@ class FrappeConnection(db.Model):
         try:
             # First authenticate with username/password
             auth_response = requests.post(
-                f"{self.url}/api/method/frappe.auth.get_logged_user",
-                auth=(self.username, password)
+                f"{self.url}/api/method/login",
+                data={"usr": self.username, "pwd": password}
             )
             if auth_response.ok:
+                print(auth_response)
                 # Get API key and secret
                 key_response = requests.post(
                     f"{self.url}/api/method/frappe.core.doctype.user.user.generate_keys",
-                    auth=(self.username, password)
+                    data={"user":auth_response.json()["full_name"]},
                 )
                 if key_response.ok:
                     data = key_response.json()
                     self.api_key = data.get('message', {}).get('api_key')
                     self.api_secret = data.get('message', {}).get('api_secret')
         except Exception as e:
+            print("Exception: " + str(e))
             # If API key generation fails, fall back to password authentication
             self.api_key = None
             self.api_secret = None

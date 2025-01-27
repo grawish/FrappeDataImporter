@@ -35,6 +35,7 @@ function ConnectionForm({ onConnect }) {
               type="url"
               className="form-control"
               value={formData.url}
+              autoComplete={"on"}
               onChange={(e) => setFormData({...formData, url: e.target.value})}
               required
             />
@@ -45,6 +46,7 @@ function ConnectionForm({ onConnect }) {
               type="text"
               className="form-control"
               value={formData.username}
+              autoComplete={"username webauthn"}
               onChange={(e) => setFormData({...formData, username: e.target.value})}
               required
             />
@@ -54,6 +56,7 @@ function ConnectionForm({ onConnect }) {
             <input
               type="password"
               className="form-control"
+              autoComplete={"current-password webauthn"}
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               required
