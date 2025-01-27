@@ -19,11 +19,7 @@ export async function getSchema(connectionId) {
   return response.json();
 }
 
-export async function uploadFile(file, connectionId) {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('connection_id', connectionId);
-
+export async function uploadFile(formData) {
   const response = await fetch(`${API_BASE_URL}/upload`, {
     method: 'POST',
     credentials: 'include',

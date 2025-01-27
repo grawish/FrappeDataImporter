@@ -61,7 +61,14 @@ function FileUpload({ connectionId, onUpload }) {
     }
 
     try {
-      const response = await uploadFile(file, connectionId);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('connection_id', connectionId);
+      formData.append('batch_size', batchSize.toString());
+      formData.append('frappe_url', 'https://demo.frappe.cloud'); // TODO: Get this from connection
+      formData.append('doctype', 'Item'); // TODO: Get this from user selection
+
+      const response = await uploadFile(formData);
       if (response.status === 'success') {
         onUpload(response.job_id);
       } else {
