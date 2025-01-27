@@ -43,13 +43,20 @@ def get_schema(connection_id):
 def upload_file():
     if 'file' not in request.files:
         return jsonify({"status": "error", "message": "No file provided"}), 400
-    
+
     file = request.files['file']
-    if not file.filename.endswith(('.xlsx', '.xls')):
-        return jsonify({"status": "error", "message": "Invalid file format"}), 400
+    filename = file.filename.lower()
 
     try:
-        df = pd.read_excel(file)
+        # Read the file based on its extension
+        if filename.endswith('.csv'):
+            df = pd.read_csv(file)
+        elif filename.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(file)
+        else:
+            return jsonify({"status": "error", "message": "Unsupported file format"}), 400
+
+        # Create import job
         job = ImportJob(
             frappe_url=request.form.get('frappe_url'),
             doctype=request.form.get('doctype'),
@@ -57,7 +64,13 @@ def upload_file():
         )
         db.session.add(job)
         db.session.commit()
-        return jsonify({"status": "success", "job_id": job.id, "columns": df.columns.tolist()})
+
+        return jsonify({
+            "status": "success",
+            "job_id": job.id,
+            "columns": df.columns.tolist(),
+            "total_rows": len(df)
+        })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
@@ -65,7 +78,7 @@ def upload_file():
 def import_data(job_id):
     job = ImportJob.query.get_or_404(job_id)
     mapping = request.json.get('mapping', {})
-    
+
     try:
         # Implementation of actual import logic would go here
         job.status = 'processing'

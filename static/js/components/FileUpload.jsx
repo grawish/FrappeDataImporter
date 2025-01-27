@@ -6,6 +6,20 @@ function FileUpload({ connectionId, onUpload }) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
 
+  const acceptedFormats = {
+    'csv': 'text/csv',
+    'excel': [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ]
+  };
+
+  const isValidFileType = (file) => {
+    const validTypes = [...acceptedFormats.excel, acceptedFormats.csv];
+    return validTypes.includes(file.type) || 
+           file.name.match(/\.(xlsx|xls|csv)$/);
+  };
+
   const handleDragOver = (e) => {
     e.preventDefault();
     setDragging(true);
@@ -19,18 +33,23 @@ function FileUpload({ connectionId, onUpload }) {
     e.preventDefault();
     setDragging(false);
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile.type.includes('excel') || droppedFile.name.match(/\.(xlsx|xls)$/)) {
+    if (isValidFileType(droppedFile)) {
       setFile(droppedFile);
+      setError('');
     } else {
-      setError('Please upload an Excel file');
+      setError('Please upload a valid file (Excel or CSV)');
     }
   };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      setFile(selectedFile);
-      setError('');
+      if (isValidFileType(selectedFile)) {
+        setFile(selectedFile);
+        setError('');
+      } else {
+        setError('Please upload a valid file (Excel or CSV)');
+      }
     }
   };
 
@@ -55,9 +74,9 @@ function FileUpload({ connectionId, onUpload }) {
   return (
     <div className="card">
       <div className="card-body">
-        <h3>Upload Excel File</h3>
+        <h3>Upload Data File</h3>
         {error && <div className="alert alert-danger">{error}</div>}
-        
+
         <div 
           className={`upload-area ${dragging ? 'dragging' : ''}`}
           onDragOver={handleDragOver}
@@ -65,10 +84,10 @@ function FileUpload({ connectionId, onUpload }) {
           onDrop={handleDrop}
         >
           <i data-feather="upload-cloud" className="upload-icon"></i>
-          <p>Drag and drop your Excel file here or</p>
+          <p>Drag and drop your file here or</p>
           <input
             type="file"
-            accept=".xlsx,.xls"
+            accept=".xlsx,.xls,.csv"
             onChange={handleFileChange}
             className="form-control"
           />
