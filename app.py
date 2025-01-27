@@ -3,6 +3,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_migrate import Migrate
 from sqlalchemy.orm import DeclarativeBase
 
 logging.basicConfig(level=logging.DEBUG)
@@ -12,6 +13,7 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
+migrate = Migrate(app, db)
 
 # Configure CORS with specific settings
 CORS(app, resources={
