@@ -28,15 +28,27 @@ function FileUpload({ connectionId, onUpload }) {
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
     if (checked) {
-      const allFields = schema.docs.filter((d)=>{
-        return d.name === selectedDoctype;
-      })[0].fields
+      // Get main fields
+      const mainFields = schema.docs[0].fields
         .filter(field => !field.hidden && !field.read_only && 
-          !['Section Break', 'Column Break', 'Tab Break','Table', 'Read Only'].includes(field.fieldtype) &&
+          !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
           !field.fieldtype.endsWith('Link'))
-        .map(field => field.label);
-      setSelectedFields(allFields);
-      setSelectMandatory(false); // Deselect mandatory if selecting all
+        .map(field => field.fieldname);
+      
+      // Get child table fields
+      const childFields = schema.docs[0].fields
+        .filter(field => field.fieldtype === 'Table')
+        .flatMap(tableField => {
+          const childDoc = schema.docs.find(d => d.name === tableField.options);
+          return childDoc ? childDoc.fields
+            .filter(field => !field.hidden && !field.read_only &&
+              !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
+              !field.fieldtype.endsWith('Link'))
+            .map(field => `${tableField.label}.${field.label}`) : [];
+        });
+
+      setSelectedFields([...mainFields, ...childFields]);
+      setSelectMandatory(false);
     } else {
       setSelectedFields([]);
     }
