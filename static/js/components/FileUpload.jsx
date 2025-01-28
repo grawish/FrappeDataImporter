@@ -23,6 +23,7 @@ function FileUpload({ connectionId, onUpload }) {
   const [selectedFields, setSelectedFields] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
+  const [selectMandatory, setSelectMandatory] = useState(false); // Added state for mandatory fields
 
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
@@ -33,19 +34,26 @@ function FileUpload({ connectionId, onUpload }) {
           !field.fieldtype.endsWith('Link'))
         .map(field => field.label);
       setSelectedFields(allFields);
+      setSelectMandatory(false); // Deselect mandatory if selecting all
     } else {
       setSelectedFields([]);
     }
   };
 
-  const handleSelectMandatory = () => {
-    const mandatoryFields = schema.docs[0].fields
-      .filter(field => !field.hidden && !field.read_only && field.reqd &&
-        !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
-        !field.fieldtype.endsWith('Link'))
-      .map(field => field.label);
-    setSelectedFields(mandatoryFields);
-    setSelectAll(false);
+  const handleSelectMandatory = (checked) => {
+    setSelectMandatory(checked);
+    if (checked) {
+      const mandatoryFields = schema.docs[0].fields
+        .filter(field => !field.hidden && !field.read_only && field.reqd &&
+          !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+          !field.fieldtype.endsWith('Link'))
+        .map(field => field.label);
+      setSelectedFields(mandatoryFields);
+      setSelectAll(false); // Deselect all if selecting mandatory
+    } else {
+      //Remove only mandatory fields from selectedFields
+      setSelectedFields(selectedFields.filter(field => !mandatoryFields.includes(field)));
+    }
   };
 
   useEffect(() => {
@@ -167,13 +175,13 @@ function FileUpload({ connectionId, onUpload }) {
                     <FormControlLabel
                       control={
                         <Checkbox
-                          checked={selectAll}
+                          checked={selectMandatory} // Corrected to use selectMandatory state
                           onChange={(e) => handleSelectMandatory(e.target.checked)}
                         />
                       }
                       label="Select Mandatory Fields"
                     />
-                    
+
                   </Box>
 
                   <List sx={{ mt: 2 }}>
