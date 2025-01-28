@@ -79,28 +79,27 @@ def get_template(connection_id):
             
         schema_data = response.json()
         
-        # Get main fields and child table fields
-        all_fields = []
+        # Get main fields
+        all_fields = {}
         main_fields = schema_data['docs'][0]['fields']
+        
+        # Process main fields
         for field in main_fields:
             if field['fieldtype'] == 'Table':
-                child_fields = schema_data['docs'][field['name'] == schema_data['docs'][0]['name']]['fields']
-                for child_field in child_fields:
-                    all_fields.append({
-                        'label': f"{field['label']}.{child_field['label']}",
-                        'fieldtype': child_field['fieldtype']
-                    })
+                # Find child table schema
+                child_doc = next((d for d in schema_data['docs'] if d['name'] == field['options']), None)
+                if child_doc and 'fields' in child_doc:
+                    # Add child fields with qualified names
+                    for child_field in child_doc['fields']:
+                        qualified_name = f"{field['label']}.{child_field['label']}"
+                        all_fields[qualified_name] = child_field['fieldtype']
             else:
-                all_fields.append(field)
+                all_fields[field['label']] = field['fieldtype']
 
-        # Create column headers with field types and Excel mapping options
+        # Create column headers with field types
         columns = []
         for field in selected_fields:
-            if '.' in field:  # Child table field
-                parent, child = field.split('.')
-                fieldtype = next((f['fieldtype'] for f in all_fields if f['label'] == field), '')
-            else:
-                fieldtype = next((f['fieldtype'] for f in all_fields if f['label'] == field), '')
+            fieldtype = all_fields.get(field, '')
             columns.append(f"{field} [{fieldtype}]")
         
         # Create Excel template with formatted headers
