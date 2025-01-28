@@ -120,14 +120,19 @@ function FileUpload({ connectionId, onUpload }) {
               type="text"
               className="form-control mb-2"
               placeholder="Search doctypes..."
-              onChange={(e) => {
+              onChange={async (e) => {
                 const searchTerm = e.target.value.toLowerCase();
-                const filtered = doctypes.filter(doctype => 
-                  doctype.toLowerCase().includes(searchTerm)
-                );
-                setDoctypes(filtered);
-                if (!searchTerm) {
-                  fetchDoctypes();
+                try {
+                  const response = await getDoctypes(connectionId);
+                  if (response.message) {
+                    const filtered = response.message.filter(doctype => 
+                      doctype.toLowerCase().includes(searchTerm)
+                    );
+                    setDoctypes(filtered);
+                  }
+                } catch (err) {
+                  console.error("Error filtering doctypes:", err);
+                  setError("Failed to filter doctypes");
                 }
               }}
             />
