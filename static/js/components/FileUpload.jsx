@@ -68,7 +68,7 @@ function FileUpload({ connectionId, onUpload }) {
     const mandatoryFields = schema.docs[0].fields
       .filter(field => !field.hidden && !field.read_only && field.reqd &&
         !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
-      .map(field => field.label);
+      .map(field => field.fieldname);
 
     if (checked) {
       setSelectedFields(mandatoryFields);
