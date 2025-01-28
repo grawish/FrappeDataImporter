@@ -111,9 +111,12 @@ def get_template(connection_id):
 
         # Create column headers with field types
         columns = []
-        for field_name, field_type in ordered_fields:
+        for field_name, field_type, options in ordered_fields:
             if field_type:  # Only add fields that we found types for
-                columns.append(f"{field_name} [{field_type}]")
+                if field_type.startswith('Link')
+                    columns.append(f"{field_name} [{field_type}-{options}]")
+                else:
+                    columns.append(f"{field_name} [{field_type}]")
 
         # Process columns to handle child tables
         final_columns = []
@@ -146,16 +149,8 @@ def get_template(connection_id):
         # Create Excel template with formatted headers
         df = pd.DataFrame(columns=final_columns)
 
-        # Save to temporary file with instructions
-        link_options_string = ""
-        for field_name in selected_fields:
-            if field_name in all_fields and all_fields[field_name].endswith('Link'):
-                field_data = next((field for field in main_fields if field.get('fieldname') == field_name), None)
-                if field_data and field_data.get('options'):
-                    link_options_string += f"[{field_data.get('options')}]"
 
-
-        excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}{link_options_string}_template.xlsx')
+        excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
         writer = pd.ExcelWriter(excel_file, engine='openpyxl')
         df.to_excel(writer, index=False, sheet_name='Template')
 
