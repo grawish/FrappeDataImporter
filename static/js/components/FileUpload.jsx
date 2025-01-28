@@ -3,7 +3,7 @@ import { uploadFile, getDoctypes } from "../services/api";
 import { 
   Card, CardContent, Typography, TextField, 
   Button, LinearProgress, Alert, Autocomplete,
-  Box, Input
+  Box, Input, Checkbox, FormControlLabel
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
@@ -16,8 +16,19 @@ function FileUpload({ connectionId, onUpload }) {
   const [selectedDoctype, setSelectedDoctype] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");
+  const [schema, setSchema] = useState(null);
+  const [selectedFields, setSelectedFields] = useState([]);
 
   useEffect(() => {
+    if (selectedDoctype) {
+      getSchema(connectionId, selectedDoctype)
+        .then(response => {
+          setSchema(response);
+          setSelectedFields([]);
+        })
+        .catch(err => setError("Failed to load schema"));
+    }
+  }, [selectedDoctype]);
     const fetchDoctypes = async () => {
       try {
         const response = await getDoctypes(connectionId);
@@ -85,14 +96,64 @@ function FileUpload({ connectionId, onUpload }) {
             )}
             sx={{ mb: 2 }}
           />
-          {selectedDoctype && (
-            <Button
-              variant="outlined"
-              onClick={() => window.open(`/api/template/${connectionId}?doctype=${encodeURIComponent(selectedDoctype)}`, '_blank')}
-              sx={{ mb: 2 }}
-            >
-              Download Template
-            </Button>
+          {schema && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>Select Fields for Template</Typography>
+              {schema.docs[0].fields.map(field => (
+                !field.hidden && !field.read_only && 
+                !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+                !field.fieldtype.endsWith('Link') && (
+                  <FormControlLabel
+                    key={field.fieldname}
+                    control={
+                      <Checkbox
+                        checked={selectedFields.includes(field.label)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedFields([...selectedFields, field.label]);
+                          } else {
+                            setSelectedFields(selectedFields.filter(f => f !== field.label));
+                          }
+                        }}
+                      />
+                    }
+                    label={field.label}
+                  />
+                )
+              ))}
+              <Button
+                variant="outlined"
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`/api/template/${connectionId}`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        doctype: selectedDoctype,
+                        fields: selectedFields
+                      })
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to generate template');
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${selectedDoctype}_template.xlsx`;
+                    a.click();
+                  } catch (err) {
+                    setError('Failed to download template');
+                  }
+                }}
+                disabled={selectedFields.length === 0}
+                sx={{ mt: 2 }}
+              >
+                Download Template
+              </Button>
+            </Box>
           )}
         </Box>
 

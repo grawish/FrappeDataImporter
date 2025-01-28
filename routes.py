@@ -56,10 +56,13 @@ def get_schema(connection_id):
         logging.error(f"Error getting schema: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
-@app.route('/api/template/<connection_id>')
+@app.route('/api/template/<connection_id>', methods=['POST'])
 def get_template(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
-    doctype = request.args.get('doctype')
+    data = request.json
+    doctype = data.get('doctype')
+    selected_fields = data.get('fields', [])
+    
     if not doctype:
         return jsonify({"status": "error", "message": "Doctype is required"}), 400
 
@@ -76,14 +79,8 @@ def get_template(connection_id):
             
         schema_data = response.json()
         
-        # Create Excel template
-        df = pd.DataFrame(columns=[
-            field.get('label', '') 
-            for field in schema_data.get('docs', [{}])[0].get('fields', [])
-            if not field.get('hidden') and not field.get('read_only') 
-            and field.get('fieldtype') not in ['Section Break', 'Column Break', 'Tab Break']
-            and not field.get('fieldtype', '').endswith('Link') 
-        ])
+        # Create Excel template with selected fields
+        df = pd.DataFrame(columns=[field for field in selected_fields])
         
         # Save to temporary file
         excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
