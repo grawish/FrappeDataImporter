@@ -141,12 +141,13 @@ def get_template(connection_id):
                             else:
                                 col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype']}]"
                             final_columns.append(col_name)
-            elif field['fieldtype'] == 'Link':
-                # Extract the actual field type and options from combined string
-                final_columns.append(f"{field['fieldname']} [{field['fieldtype']}] [{field['options']}]")
             else:
-                if field['fieldname'] in selected_fields:
-                    final_columns.append(f"{field['fieldname']} [{field['fieldtype']}]")
+                fieldname = field.get('fieldname')
+                if fieldname in selected_fields:
+                    if field.get('fieldtype') == 'Link':
+                        final_columns.append(f"{fieldname} [{field.get('fieldtype')}] [{field.get('options', '')}]")
+                    else:
+                        final_columns.append(f"{fieldname} [{field.get('fieldtype')}]")
 
         # Create Excel template with formatted headers
         df = pd.DataFrame(columns=final_columns)
