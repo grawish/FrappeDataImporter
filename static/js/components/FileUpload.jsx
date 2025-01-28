@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+4import React, { useState, useEffect } from "react";
 import { uploadFile, getDoctypes } from "../services/api";
 import { 
   Card, CardContent, Typography, TextField, 
@@ -49,7 +49,7 @@ function FileUpload({ connectionId, onUpload }) {
       formData.append("file", file);
       formData.append("connection_id", connectionId);
       formData.append("batch_size", batchSize.toString());
-      formData.append("frappe_url", "https://demo.frappe.cloud");
+      formData.append("frappe_url", "");
       formData.append("doctype", selectedDoctype);
 
       const response = await uploadFile(formData);
