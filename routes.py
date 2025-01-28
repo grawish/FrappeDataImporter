@@ -145,18 +145,7 @@ def get_template(connection_id):
         excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
         writer = pd.ExcelWriter(excel_file, engine='openpyxl')
         df.to_excel(writer, index=False, sheet_name='Template')
-        
-        # Add instructions sheet
-        instructions = pd.DataFrame({
-            'Instructions': [
-                'For child tables:',
-                f'- Each child table has {max_rows} sets of columns',
-                '- Column format: tablename.row_number.fieldname',
-                '- Example: items.1.item_name, items.2.item_name',
-                '- Leave cells empty if not needed'
-            ]
-        })
-        instructions.to_excel(writer, sheet_name='Instructions', index=False)
+
         writer.close()
         
         return send_file(
