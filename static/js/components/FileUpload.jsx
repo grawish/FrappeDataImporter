@@ -34,7 +34,7 @@ function FileUpload({ connectionId, onUpload }) {
           !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
           !field.fieldtype.endsWith('Link'))
         .map(field => field.fieldname);
-      
+
       // Get child table fields
       const childFields = schema.docs[0].fields
         .filter(field => field.fieldtype === 'Table')
@@ -44,8 +44,8 @@ function FileUpload({ connectionId, onUpload }) {
             .filter(field => !field.hidden && !field.read_only &&
               !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
               !field.fieldtype.endsWith('Link'))
-            .map(field => `${tableField.fieldname}.${field.fieldname}`)) : [];
-          });
+            .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
+        });
 
       setSelectedFields([...mainFields, ...childFields]);
       setSelectMandatory(false);
@@ -61,7 +61,7 @@ function FileUpload({ connectionId, onUpload }) {
         !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
         !field.fieldtype.endsWith('Link'))
       .map(field => field.label);
-      
+
     if (checked) {
       setSelectedFields(mandatoryFields);
       setSelectAll(false);
@@ -231,7 +231,7 @@ function FileUpload({ connectionId, onUpload }) {
                         </ListItem>
                       )
                     ))}
-                    
+
                     {/* Child table fields */}
                     {schema.docs[0].fields
                       .filter(field => field.fieldtype === 'Table')
