@@ -208,7 +208,7 @@ function FileUpload({ connectionId, onUpload }) {
                           <ListItemText 
                             primary={
                               <Typography sx={{ color: field.reqd ? 'error.main' : 'inherit' }}>
-                                {field.label} {field.reqd ? <span style={{ color: '#ff1744' }}>*</span> : ""}
+                                {field.label} [{field.fieldtype}] {field.reqd ? <span style={{ color: '#ff1744' }}>*</span> : ""}
                               </Typography>
                             }
                           />
