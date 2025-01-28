@@ -104,12 +104,54 @@ def get_template(connection_id):
             if fieldtype:  # Only add fields that we found types for
                 columns.append(f"{field} [{fieldtype}]")
         
-        # Create Excel template with formatted headers
-        df = pd.DataFrame(columns=columns)
+        # Process columns to handle child tables
+        final_columns = []
+        child_table_info = {}
+        max_rows = 5  # Number of rows for child tables
         
-        # Save to temporary file
+        for field in schema_data['docs'][0]['fields']:
+            if field['fieldtype'] == 'Table':
+                child_doc = next((d for d in schema_data['docs'] if d['name'] == field['options']), None)
+                if child_doc and 'fields' in child_doc:
+                    child_fields = [f for f in child_doc['fields'] 
+                                  if not f['hidden'] and not f['read_only'] and
+                                  not f['fieldtype'] in ['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'] and
+                                  not f['fieldtype'].endswith('Link')]
+                    
+                    child_table_info[field['fieldname']] = {
+                        'fields': child_fields,
+                        'count': max_rows
+                    }
+                    
+                    # Add numbered columns for each child field
+                    for i in range(1, max_rows + 1):
+                        for child_field in child_fields:
+                            col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype']}]"
+                            final_columns.append(col_name)
+            else:
+                if field['fieldname'] in selected_fields:
+                    final_columns.append(f"{field['fieldname']} [{field['fieldtype']}]")
+
+        # Create Excel template with formatted headers
+        df = pd.DataFrame(columns=final_columns)
+        
+        # Save to temporary file with instructions
         excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
-        df.to_excel(excel_file, index=False)
+        writer = pd.ExcelWriter(excel_file, engine='openpyxl')
+        df.to_excel(writer, index=False, sheet_name='Template')
+        
+        # Add instructions sheet
+        instructions = pd.DataFrame({
+            'Instructions': [
+                'For child tables:',
+                f'- Each child table has {max_rows} sets of columns',
+                '- Column format: tablename.row_number.fieldname',
+                '- Example: items.1.item_name, items.2.item_name',
+                '- Leave cells empty if not needed'
+            ]
+        })
+        instructions.to_excel(writer, sheet_name='Instructions', index=False)
+        writer.close()
         
         return send_file(
             excel_file,
@@ -228,8 +270,42 @@ def import_data(job_id):
             # Map the data according to the provided mapping
             mapped_data = []
             for _, row in batch_df.iterrows():
-                record = {frappe_field: row[excel_col] for excel_col, frappe_field in mapping.items()}
-                mapped_data.append(record)
+                record = {}
+                child_tables = {}
+                
+                # Process each excel column
+                for excel_col, frappe_field in mapping.items():
+                    # Check if this is a child table field
+                    if '.' in excel_col:
+                        parts = excel_col.split('.')
+                        if len(parts) == 3:  # format: table_name.row_number.field_name
+                            table_name, row_num, field_name = parts
+                            row_num = int(row_num)
+                            
+                            # Initialize child table if needed
+                            if table_name not in child_tables:
+                                child_tables[table_name] = {}
+                            
+                            # Initialize row if needed
+                            if row_num not in child_tables[table_name]:
+                                child_tables[table_name][row_num] = {}
+                            
+                            # Add value if not empty
+                            if pd.notna(row[excel_col]) and str(row[excel_col]).strip():
+                                child_tables[table_name][row_num][field_name] = row[excel_col]
+                    else:
+                        # Handle main document fields
+                        if pd.notna(row[excel_col]):
+                            record[frappe_field] = row[excel_col]
+                
+                # Convert child tables to lists and add to record
+                for table_name, rows in child_tables.items():
+                    valid_rows = [data for row_num, data in sorted(rows.items()) if data]
+                    if valid_rows:
+                        record[table_name] = valid_rows
+                
+                if record:  # Only add non-empty records
+                    mapped_data.append(record)
 
             # Here you would send the mapped_data to Frappe
             # For now, we'll just update the progress
