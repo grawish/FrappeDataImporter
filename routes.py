@@ -103,12 +103,17 @@ def get_template(connection_id):
                     field_type = f"{field_type} [{field.get('options', '')}]"
                 all_fields[field['fieldname']] = field_type
 
+        # Sort fields to maintain order
+        ordered_fields = []
+        for field_name in selected_fields:
+            if field_name in all_fields:
+                ordered_fields.append((field_name, all_fields[field_name]))
+
         # Create column headers with field types
         columns = []
-        for field in selected_fields:
-            fieldtype = all_fields.get(field, '')
-            if fieldtype:  # Only add fields that we found types for
-                columns.append(f"{field} [{fieldtype}]")
+        for field_name, field_type in ordered_fields:
+            if field_type:  # Only add fields that we found types for
+                columns.append(f"{field_name} [{field_type}]")
         
         # Process columns to handle child tables
         final_columns = []
