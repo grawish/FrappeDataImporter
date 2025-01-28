@@ -19,8 +19,8 @@ export async function getDoctypes(connectionId) {
   return response.json();
 }
 
-export async function getSchema(connectionId) {
-  const response = await fetch(`${API_BASE_URL}/schema/${connectionId}`, {
+export async function getSchema(connectionId, doctype) {
+  const response = await fetch(`${API_BASE_URL}/schema/${connectionId}?doctype=${encodeURIComponent(doctype)}`, {
     credentials: 'include'
   });
   return response.json();

@@ -41,26 +41,17 @@ def get_schema(connection_id):
         return jsonify({"status": "error", "message": "Doctype is required"}), 400
 
     try:
-        # Use Frappe's built-in method to get doctype metadata
         response = requests.get(
-            f"{conn.url}/api/method/frappe.desk.form.load.get_meta",
-            params={"doctype": doctype},
-            auth=(conn.username, conn.api_key)  # Use stored API key
+            f"{conn.url}/api/method/frappe.desk.form.load.getdoctype",
+            params={"doctype": doctype, "with_parent": 1},
+            headers={'Authorization': f'token {conn.api_key}:{conn.api_secret}'} if conn.api_key and conn.api_secret else None
         )
-        meta_data = response.json()
-
-        # Extract relevant field information
-        fields = []
-        if 'docs' in meta_data:
-            for field in meta_data['docs'][0].get('fields', []):
-                fields.append({
-                    'fieldname': field.get('fieldname'),
-                    'label': field.get('label'),
-                    'fieldtype': field.get('fieldtype'),
-                    'required': field.get('reqd', 0) == 1,
-                })
-
-        return jsonify({"fields": fields})
+        if response.ok:
+            schema_data = response.json()
+            return jsonify(schema_data)
+        
+        logging.error(f"Failed to fetch schema. Response: {response.text}")
+        return jsonify({"status": "error", "message": "Unable to fetch schema"}), 400
     except Exception as e:
         logging.error(f"Error getting schema: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
