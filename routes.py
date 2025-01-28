@@ -79,8 +79,14 @@ def get_template(connection_id):
             
         schema_data = response.json()
         
-        # Create Excel template with selected fields
-        df = pd.DataFrame(columns=[field for field in selected_fields])
+        # Get field types from schema
+        field_types = {field['label']: field['fieldtype'] for field in schema_data['docs'][0]['fields']}
+        
+        # Create column headers with field types
+        columns = [f"{field} [{field_types.get(field, '')}]" for field in selected_fields]
+        
+        # Create Excel template with formatted headers
+        df = pd.DataFrame(columns=columns)
         
         # Save to temporary file
         excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
