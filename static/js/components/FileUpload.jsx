@@ -1,42 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { uploadFile, getDoctypes } from '../services/api';
+import React, { useState, useEffect } from "react";
+import { uploadFile, getDoctypes } from "../services/api";
 
 function FileUpload({ connectionId, onUpload }) {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [batchSize, setBatchSize] = useState(100);
   const [doctypes, setDoctypes] = useState([]);
-  const [selectedDoctype, setSelectedDoctype] = useState('');
+  const [selectedDoctype, setSelectedDoctype] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchDoctypes = async () => {
-    try {
+      try {
         const response = await getDoctypes(connectionId);
         if (response.message) {
           setDoctypes(response.message);
         }
       } catch (err) {
-        console.error('Error fetching doctypes:', err);
-        setError('Failed to load doctypes');
+        console.error("Error fetching doctypes:", err);
+        setError("Failed to load doctypes");
       }
     };
     fetchDoctypes();
   }, [connectionId]);
 
   const acceptedFormats = {
-    'csv': 'text/csv',
-    'excel': [
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    ]
+    csv: "text/csv",
+    excel: [
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ],
   };
 
   const isValidFileType = (file) => {
     const validTypes = [...acceptedFormats.excel, acceptedFormats.csv];
-    return validTypes.includes(file.type) || 
-           file.name.match(/\.(xlsx|xls|csv)$/);
+    return (
+      validTypes.includes(file.type) || file.name.match(/\.(xlsx|xls|csv)$/)
+    );
   };
 
   const handleDragOver = (e) => {
@@ -54,9 +55,9 @@ function FileUpload({ connectionId, onUpload }) {
     const droppedFile = e.dataTransfer.files[0];
     if (isValidFileType(droppedFile)) {
       setFile(droppedFile);
-      setError('');
+      setError("");
     } else {
-      setError('Please upload a valid file (Excel or CSV)');
+      setError("Please upload a valid file (Excel or CSV)");
     }
   };
 
@@ -65,42 +66,42 @@ function FileUpload({ connectionId, onUpload }) {
     if (selectedFile) {
       if (isValidFileType(selectedFile)) {
         setFile(selectedFile);
-        setError('');
+        setError("");
       } else {
-        setError('Please upload a valid file (Excel or CSV)');
+        setError("Please upload a valid file (Excel or CSV)");
       }
     }
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Please select a file');
+      setError("Please select a file");
       return;
     }
 
     if (!selectedDoctype) {
-      setError('Please select a doctype');
+      setError("Please select a doctype");
       return;
     }
 
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('connection_id', connectionId);
-      formData.append('batch_size', batchSize.toString());
-      formData.append('frappe_url', 'https://demo.frappe.cloud'); // TODO: Get this from connection
-      formData.append('doctype', selectedDoctype);
+      formData.append("file", file);
+      formData.append("connection_id", connectionId);
+      formData.append("batch_size", batchSize.toString());
+      formData.append("frappe_url", "https://demo.frappe.cloud"); // TODO: Get this from connection
+      formData.append("doctype", selectedDoctype);
 
       const response = await uploadFile(formData);
-      if (response.status === 'success') {
+      if (response.status === "success") {
         onUpload(response.job_id);
       } else {
-        setError(response.message || 'Failed to upload file');
+        setError(response.message || "Failed to upload file");
       }
     } catch (err) {
-      setError('Failed to upload file');
-      console.error('Upload error:', err);
+      setError("Failed to upload file");
+      console.error("Upload error:", err);
     } finally {
       setLoading(false);
     }
@@ -134,7 +135,9 @@ function FileUpload({ connectionId, onUpload }) {
             type="number"
             className="form-control"
             value={batchSize}
-            onChange={(e) => setBatchSize(Math.max(1, parseInt(e.target.value) || 1))}
+            onChange={(e) =>
+              setBatchSize(Math.max(1, parseInt(e.target.value) || 1))
+            }
             min="1"
           />
           <small className="form-text text-muted">
@@ -142,8 +145,8 @@ function FileUpload({ connectionId, onUpload }) {
           </small>
         </div>
 
-        <div 
-          className={`upload-area ${dragging ? 'dragging' : ''}`}
+        <div
+          className={`upload-area ${dragging ? "dragging" : ""}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -161,12 +164,12 @@ function FileUpload({ connectionId, onUpload }) {
         {file && (
           <div className="mt-3">
             <p>Selected file: {file.name}</p>
-            <button 
+            <button
               className="btn btn-primary"
               onClick={handleUpload}
               disabled={loading || !selectedDoctype}
             >
-              {loading ? 'Uploading...' : 'Upload and Continue'}
+              {loading ? "Uploading..." : "Upload and Continue"}
             </button>
           </div>
         )}
