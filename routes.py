@@ -88,17 +88,17 @@ def get_template(connection_id):
             if field['fieldtype'] == 'Table':
                 # Find child table schema
                 child_doc = next((d for d in schema_data['docs'] if d['name'] == field['options']), None)
-                if child_doc and 'fields' in child_doc:
+                if child_doc and isinstance(child_doc, dict) and 'fields' in child_doc:
                     # Add child fields with qualified names
                     for child_field in child_doc['fields']:
-                        if 'fieldname' in child_field:
+                        if isinstance(child_field, dict) and 'fieldname' in child_field:
                             qualified_name = f"{field['fieldname']}.{child_field['fieldname']}"
-                            field_type = child_field['fieldtype']
+                            field_type = child_field.get('fieldtype', '')
                             if field_type.endswith('Link'):
                                 field_type = f"{field_type} [{child_field.get('options', '')}]"
                             all_fields[qualified_name] = field_type
-            elif 'fieldname' in field:
-                field_type = field['fieldtype']
+            elif isinstance(field, dict) and 'fieldname' in field:
+                field_type = field.get('fieldtype', '')
                 if field_type.endswith('Link'):
                     field_type = f"{field_type} [{field.get('options', '')}]"
                 all_fields[field['fieldname']] = field_type
@@ -112,7 +112,14 @@ def get_template(connection_id):
         # Create column headers with field types
         columns = []
         for field_name, field_type in ordered_fields:
-            if field_type:  # Only add fields that we found types for
+            if isinstance(field_type, str):  # Ensure field_type is a string
+                if field_type.endswith('Link'):
+                    # Extract the actual field type and options from combined string
+                    parts = field_type.split(' [')
+                    base_type = parts[0]
+                    options = parts[1][:-1] if len(parts) > 1 else ''
+                    columns.append(f"{field_name} [{base_type}] [{options}]")
+                else:
                     columns.append(f"{field_name} [{field_type}]")
 
         # Process columns to handle child tables
