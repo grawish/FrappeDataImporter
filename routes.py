@@ -79,11 +79,29 @@ def get_template(connection_id):
             
         schema_data = response.json()
         
-        # Get field types from schema
-        field_types = {field['label']: field['fieldtype'] for field in schema_data['docs'][0]['fields']}
-        
-        # Create column headers with field types
-        columns = [f"{field} [{field_types.get(field, '')}]" for field in selected_fields]
+        # Get main fields and child table fields
+        all_fields = []
+        main_fields = schema_data['docs'][0]['fields']
+        for field in main_fields:
+            if field['fieldtype'] == 'Table':
+                child_fields = schema_data['docs'][field['name'] == schema_data['docs'][0]['name']]['fields']
+                for child_field in child_fields:
+                    all_fields.append({
+                        'label': f"{field['label']}.{child_field['label']}",
+                        'fieldtype': child_field['fieldtype']
+                    })
+            else:
+                all_fields.append(field)
+
+        # Create column headers with field types and Excel mapping options
+        columns = []
+        for field in selected_fields:
+            if '.' in field:  # Child table field
+                parent, child = field.split('.')
+                fieldtype = next((f['fieldtype'] for f in all_fields if f['label'] == field), '')
+            else:
+                fieldtype = next((f['fieldtype'] for f in all_fields if f['label'] == field), '')
+            columns.append(f"{field} [{fieldtype}]")
         
         # Create Excel template with formatted headers
         df = pd.DataFrame(columns=columns)
