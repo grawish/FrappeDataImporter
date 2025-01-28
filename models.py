@@ -40,16 +40,22 @@ class FrappeConnection(db.Model):
                 data={"usr": self.username, "pwd": password}
             )
             if auth_response.ok:
-                print(auth_response)
                 # Get API key and secret
                 key_response = requests.post(
                     f"{self.url}/api/method/frappe.core.doctype.user.user.generate_keys",
                     data={"user":auth_response.json()["full_name"]},
+                    cookies=auth_response.cookies.get_dict()
                 )
-                if key_response.ok:
-                    data = key_response.json()
-                    self.api_key = data.get('message', {}).get('api_key')
-                    self.api_secret = data.get('message', {}).get('api_secret')
+                user_response = requests.get(
+                    f"{self.url}/api/resource/User/{auth_response.json()['full_name']}?fields=['*']",
+                    cookies=auth_response.cookies.get_dict(),
+                )
+                if user_response.ok:
+                    user_data = user_response.json().get('data', {})
+                    self.api_key = user_data.get('api_key')
+                    if key_response.ok:
+                        data = key_response.json()
+                        self.api_secret = data.get('message', {}).get('api_secret')
         except Exception as e:
             print("Exception: " + str(e))
             # If API key generation fails, fall back to password authentication

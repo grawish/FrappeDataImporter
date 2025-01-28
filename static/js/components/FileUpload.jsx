@@ -12,7 +12,7 @@ function FileUpload({ connectionId, onUpload }) {
 
   useEffect(() => {
     const fetchDoctypes = async () => {
-      try {
+    try {
         const response = await getDoctypes(connectionId);
         if (response.message) {
           setDoctypes(response.message);

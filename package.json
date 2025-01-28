@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dev": "webpack --mode development --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,7 +17,9 @@
     "babel-loader": "^9.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "webpack": "^5.97.1",
+    "webpack": "^5.97.1"
+  },
+  "devDependencies": {
     "webpack-cli": "^6.0.1"
   }
 }

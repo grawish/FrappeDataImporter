@@ -1,3 +1,4 @@
+import base64
 import pandas as pd
 from flask import request, jsonify, send_file, render_template
 from app import app, db
@@ -70,31 +71,15 @@ def get_doctypes(connection_id):
     try:
         # Try to get doctypes using the desktop API endpoint
         response = requests.get(
-            f"{conn.url}/api/method/frappe.desk.desktop.get_doctypes",
+            f"{conn.url}/api/resource/DocType?limit_page_length=10000",
             headers={
                 'Authorization': f'token {conn.api_key}:{conn.api_secret}'
             } if conn.api_key and conn.api_secret else None,
-            cookies={
-                'user_id': conn.username,
-                'sid': conn.api_key if conn.api_key else ''
-            }
         )
-
         if response.ok:
             data = response.json()
-            if 'message' in data:
-                return jsonify({"message": sorted(data['message'])})
-
-        # Fallback to basic authentication if token auth fails
-        basic_auth_response = requests.get(
-            f"{conn.url}/api/method/frappe.desk.desktop.get_doctypes",
-            auth=(conn.username, conn.api_key if conn.api_key else '')
-        )
-
-        if basic_auth_response.ok:
-            data = basic_auth_response.json()
-            if 'message' in data:
-                return jsonify({"message": sorted(data['message'])})
+            if 'data' in data:
+                return jsonify({"message": [x["name"] for x in data['data']]})
 
         logging.error(f"Failed to fetch doctypes. Response: {response.text}")
         return jsonify({"status": "error", "message": "Unable to fetch doctypes. Please check your credentials."}), 400

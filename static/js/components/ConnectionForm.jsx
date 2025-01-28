@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connectToFrappe } from '../services/api';
 
 function ConnectionForm({ onConnect }) {
@@ -15,6 +15,8 @@ function ConnectionForm({ onConnect }) {
       const response = await connectToFrappe(formData);
       if (response.status === 'success') {
         onConnect(response.connection_id);
+        // add connection details in localstorage
+        localStorage.setItem('connection', JSON.stringify(response));
       } else {
         setError(response.message);
       }
@@ -22,6 +24,13 @@ function ConnectionForm({ onConnect }) {
       setError('Failed to connect to Frappe instance');
     }
   };
+
+  useEffect(() => {
+    const connection = localStorage.getItem('connection');
+    if (connection) {
+      onConnect(JSON.parse(connection).connection_id);
+    }
+  }, [onConnect]);
 
   return (
     <div className="card">
