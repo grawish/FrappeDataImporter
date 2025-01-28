@@ -44,11 +44,7 @@ function FileUpload({ connectionId, onUpload }) {
             .filter(field => !field.hidden && !field.read_only &&
               !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
               !field.fieldtype.endsWith('Link'))
-return childDoc ? childDoc.fields
-              .filter(field => !field.hidden && !field.read_only &&
-                !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
-                !field.fieldtype.endsWith('Link'))
-              .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
+            .map(field => `${tableField.fieldname}.${field.fieldname}`)) : [];
           });
 
       setSelectedFields([...mainFields, ...childFields]);
