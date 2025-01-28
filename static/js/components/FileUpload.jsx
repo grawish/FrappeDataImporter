@@ -44,16 +44,16 @@ function FileUpload({ connectionId, onUpload }) {
 
   const handleSelectMandatory = (checked) => {
     setSelectMandatory(checked);
+    const mandatoryFields = schema.docs[0].fields
+      .filter(field => !field.hidden && !field.read_only && field.reqd &&
+        !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+        !field.fieldtype.endsWith('Link'))
+      .map(field => field.label);
+      
     if (checked) {
-      const mandatoryFields = schema.docs[0].fields
-        .filter(field => !field.hidden && !field.read_only && field.reqd &&
-          !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
-          !field.fieldtype.endsWith('Link'))
-        .map(field => field.label);
       setSelectedFields(mandatoryFields);
-      setSelectAll(false); // Deselect all if selecting mandatory
+      setSelectAll(false);
     } else {
-      //Remove only mandatory fields from selectedFields
       setSelectedFields(selectedFields.filter(field => !mandatoryFields.includes(field)));
     }
   };
