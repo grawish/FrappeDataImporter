@@ -143,8 +143,11 @@ def get_template(connection_id):
                     # Add numbered columns for each child field
                     for i in range(1, max_rows + 1):
                         for child_field in child_fields:
-                            if child_field['fieldtype']=='Link':
-                                col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype'] [{child_field.get('options', '')}]}]"
+                            if child_field.get('fieldtype') == 'Link':
+                                options = child_field.get('options', '')
+                                if isinstance(options, (set, list)):
+                                    options = ','.join(str(opt) for opt in options)
+                                col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype']}] [{options}]"
                             else:
                                 col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype']}]"
                             final_columns.append(col_name)
@@ -152,7 +155,10 @@ def get_template(connection_id):
                 fieldname = field.get('fieldname')
                 if fieldname in selected_fields:
                     if field.get('fieldtype') == 'Link':
-                        final_columns.append(f"{fieldname} [{field.get('fieldtype')}] [{field.get('options', '')}]")
+                        options = field.get('options', '')
+                        if isinstance(options, (set, list)):
+                            options = ','.join(str(opt) for opt in options)
+                        final_columns.append(f"{fieldname} [{field.get('fieldtype')}] [{options}]")
                     else:
                         final_columns.append(f"{fieldname} [{field.get('fieldtype')}]")
 
