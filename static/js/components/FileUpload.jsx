@@ -6,7 +6,7 @@ import {
   Button, LinearProgress, Alert, Autocomplete,
   Box, Input, Checkbox, FormControlLabel
 } from '@mui/material';
-import getSchema from '../services/api';
+import { getSchema } from '../services/api';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 function FileUpload({ connectionId, onUpload }) {
