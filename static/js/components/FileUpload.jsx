@@ -24,6 +24,16 @@ function FileUpload({ connectionId, onUpload }) {
   const [openModal, setOpenModal] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
   const [selectMandatory, setSelectMandatory] = useState(false); // Added state for mandatory fields
+  const [selectRecommended, setSelectRecommended] = useState(false); // Added state for recommended fields
+  const [config, setConfig] = useState({}); // Added state for config
+
+  useEffect(() => {
+    // Fetch config.json
+    fetch('config.json')
+      .then(response => response.json())
+      .then(data => setConfig(data))
+      .catch(error => console.error('Error loading config.json:', error));
+  }, []);
 
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
@@ -47,6 +57,7 @@ function FileUpload({ connectionId, onUpload }) {
 
       setSelectedFields([...mainFields, ...childFields]);
       setSelectMandatory(false);
+      setSelectRecommended(false);
     } else {
       setSelectedFields([]);
     }
@@ -62,6 +73,7 @@ function FileUpload({ connectionId, onUpload }) {
     if (checked) {
       setSelectedFields(mandatoryFields);
       setSelectAll(false);
+      setSelectRecommended(false);
     } else {
       setSelectedFields(selectedFields.filter(field => !mandatoryFields.includes(field)));
     }
@@ -186,13 +198,31 @@ function FileUpload({ connectionId, onUpload }) {
                     <FormControlLabel
                       control={
                         <Checkbox
-                          checked={selectMandatory} // Corrected to use selectMandatory state
+                          checked={selectMandatory}
                           onChange={(e) => handleSelectMandatory(e.target.checked)}
                         />
                       }
                       label="Select Mandatory Fields"
                     />
-
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={selectRecommended}
+                          onChange={(e) => {
+                            setSelectRecommended(e.target.checked);
+                            if (e.target.checked) {
+                              const recommended = config.recommended_fields[selectedDoctype] || [];
+                              setSelectedFields(recommended);
+                              setSelectAll(false);
+                              setSelectMandatory(false);
+                            } else {
+                              setSelectedFields(selectedFields.filter(field => !config.recommended_fields[selectedDoctype]?.includes(field)));
+                            }
+                          }}
+                        />
+                      }
+                      label="Select Recommended Fields"
+                    />
                   </Box>
 
                   <List sx={{ mt: 2 }}>

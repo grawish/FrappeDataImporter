@@ -1,0 +1,9 @@
+
+{
+  "recommended_fields": {
+    "Customer": ["customer_name", "customer_group", "territory"],
+    "Sales Order": ["customer", "order_type", "delivery_date"],
+    "Item": ["item_code", "item_name", "item_group", "stock_uom"],
+    "Work Order": ["production_item", "qty", "planned_start_date"]
+  }
+}
