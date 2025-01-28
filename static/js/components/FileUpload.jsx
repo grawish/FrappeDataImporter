@@ -160,7 +160,10 @@ function FileUpload({ connectionId, onUpload }) {
           />
           {schema && (
             <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Button variant="contained" onClick={() => setOpenModal(true)}>
+              <Button 
+                variant="contained"
+                sx={{ mt: 2 }}
+                onClick={() => setOpenModal(true)}>
                 Select Fields ({selectedFields.length} selected)
               </Button>
               <Button
