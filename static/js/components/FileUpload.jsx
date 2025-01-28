@@ -164,21 +164,24 @@ function FileUpload({ connectionId, onUpload }) {
                       }
                       label="Select All Fields"
                     />
-                    <Button 
-                      variant="outlined"
-                      onClick={handleSelectMandatory}
-                      size="small"
-                    >
-                      Select Mandatory Fields
-                    </Button>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={selectAll}
+                          onChange={(e) => handleSelectMandatory(e.target.checked)}
+                        />
+                      }
+                      label="Select Mandatory Fields"
+                    />
+                    
                   </Box>
 
                   <List sx={{ mt: 2 }}>
-                    {schema.docs[0].fields.map(field => (
+                    {schema.docs[0].fields.map((field,idx) => (
                       !field.hidden && !field.read_only && 
                       !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
                       !field.fieldtype.endsWith('Link') && (
-                        <ListItem key={field.fieldname} dense>
+                        <ListItem key={idx} dense>
                           <ListItemIcon>
                             <Checkbox
                               edge="start"
