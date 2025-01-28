@@ -49,7 +49,7 @@ def get_schema(connection_id):
         if response.ok:
             schema_data = response.json()
             return jsonify(schema_data)
-        
+
         logging.error(f"Failed to fetch schema. Response: {response.text}")
         return jsonify({"status": "error", "message": "Unable to fetch schema"}), 400
     except Exception as e:
@@ -62,7 +62,7 @@ def get_template(connection_id):
     data = request.json
     doctype = data.get('doctype')
     selected_fields = data.get('fields', [])
-    
+
     if not doctype:
         return jsonify({"status": "error", "message": "Doctype is required"}), 400
 
@@ -73,16 +73,16 @@ def get_template(connection_id):
             params={"doctype": doctype, "with_parent": 1},
             headers={'Authorization': f'token {conn.api_key}:{conn.api_secret}'} if conn.api_key and conn.api_secret else None
         )
-        
+
         if not response.ok:
             return jsonify({"status": "error", "message": "Failed to fetch schema"}), 400
-            
+
         schema_data = response.json()
-        
+
         # Get main fields
         all_fields = {}
         main_fields = schema_data['docs'][0]['fields']
-        
+
         # Process main fields
         for field in main_fields:
             if field['fieldtype'] == 'Table':
@@ -114,26 +114,26 @@ def get_template(connection_id):
         for field_name, field_type in ordered_fields:
             if field_type:  # Only add fields that we found types for
                 columns.append(f"{field_name} [{field_type}]")
-        
+
         # Process columns to handle child tables
         final_columns = []
         child_table_info = {}
         max_rows = 5  # Number of rows for child tables
-        
+
         for field in schema_data['docs'][0]['fields']:
             if field['fieldtype'] == 'Table':
                 child_doc = next((d for d in schema_data['docs'] if d['name'] == field['options']), None)
                 if child_doc and 'fields' in child_doc:
-                    child_fields = [f for f in child_doc['fields'] 
+                    child_fields = [f for f in child_doc['fields']
                                   if not f['hidden'] and not f['read_only'] and
                                   not f['fieldtype'] in ['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'] and
                                   not f['fieldtype'].endswith('Link')]
-                    
+
                     child_table_info[field['fieldname']] = {
                         'fields': child_fields,
                         'count': max_rows
                     }
-                    
+
                     # Add numbered columns for each child field
                     for i in range(1, max_rows + 1):
                         for child_field in child_fields:
@@ -145,18 +145,26 @@ def get_template(connection_id):
 
         # Create Excel template with formatted headers
         df = pd.DataFrame(columns=final_columns)
-        
+
         # Save to temporary file with instructions
-        excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
+        link_options_string = ""
+        for field_name in selected_fields:
+            if field_name in all_fields and all_fields[field_name].endswith('Link'):
+                field_data = next((field for field in main_fields if field.get('fieldname') == field_name), None)
+                if field_data and field_data.get('options'):
+                    link_options_string += f"[{field_data.get('options')}]"
+
+
+        excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}{link_options_string}_template.xlsx')
         writer = pd.ExcelWriter(excel_file, engine='openpyxl')
         df.to_excel(writer, index=False, sheet_name='Template')
 
         writer.close()
-        
+
         return send_file(
             excel_file,
             as_attachment=True,
-            download_name=f'{doctype}_template.xlsx',
+            download_name=f'{doctype}{link_options_string}_template.xlsx',
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
 
@@ -272,7 +280,7 @@ def import_data(job_id):
             for _, row in batch_df.iterrows():
                 record = {}
                 child_tables = {}
-                
+
                 # Process each excel column
                 for excel_col, frappe_field in mapping.items():
                     # Check if this is a child table field
@@ -281,15 +289,15 @@ def import_data(job_id):
                         if len(parts) == 3:  # format: table_name.row_number.field_name
                             table_name, row_num, field_name = parts
                             row_num = int(row_num)
-                            
+
                             # Initialize child table if needed
                             if table_name not in child_tables:
                                 child_tables[table_name] = {}
-                            
+
                             # Initialize row if needed
                             if row_num not in child_tables[table_name]:
                                 child_tables[table_name][row_num] = {}
-                            
+
                             # Add value if not empty
                             if pd.notna(row[excel_col]) and str(row[excel_col]).strip():
                                 child_tables[table_name][row_num][field_name] = row[excel_col]
@@ -297,13 +305,13 @@ def import_data(job_id):
                         # Handle main document fields
                         if pd.notna(row[excel_col]):
                             record[frappe_field] = row[excel_col]
-                
+
                 # Convert child tables to lists and add to record
                 for table_name, rows in child_tables.items():
                     valid_rows = [data for row_num, data in sorted(rows.items()) if data]
                     if valid_rows:
                         record[table_name] = valid_rows
-                
+
                 if record:  # Only add non-empty records
                     mapped_data.append(record)
 
