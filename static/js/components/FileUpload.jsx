@@ -187,6 +187,10 @@ function FileUpload({ connectionId, onUpload }) {
                   </Box>
 
                   <List sx={{ mt: 2 }}>
+                    {/* Regular fields */}
+                    <Typography variant="subtitle1" sx={{ pl: 2, py: 1, bgcolor: 'grey.100' }}>
+                      Main Fields
+                    </Typography>
                     {schema.docs[0].fields.map((field,idx) => (
                       !field.hidden && !field.read_only && 
                       !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
@@ -214,6 +218,45 @@ function FileUpload({ connectionId, onUpload }) {
                           />
                         </ListItem>
                       )
+                    ))}
+                    
+                    {/* Child table fields */}
+                    {schema.docs[0].fields
+                      .filter(field => field.fieldtype === 'Table')
+                      .map((tableField, tableIdx) => (
+                        <React.Fragment key={tableIdx}>
+                          <Typography variant="subtitle1" sx={{ pl: 2, py: 1, mt: 2, bgcolor: 'grey.100' }}>
+                            {tableField.label} Fields
+                          </Typography>
+                          {schema.docs.find(d => d.name === tableField.options)?.fields.map((field, fieldIdx) => (
+                            !field.hidden && !field.read_only &&
+                            !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
+                            !field.fieldtype.endsWith('Link') && (
+                              <ListItem key={fieldIdx} dense sx={{ pl: 4 }}>
+                                <ListItemIcon>
+                                  <Checkbox
+                                    edge="start"
+                                    checked={selectedFields.includes(`${tableField.label}.${field.label}`)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedFields([...selectedFields, `${tableField.label}.${field.label}`]);
+                                      } else {
+                                        setSelectedFields(selectedFields.filter(f => f !== `${tableField.label}.${field.label}`));
+                                      }
+                                    }}
+                                  />
+                                </ListItemIcon>
+                                <ListItemText 
+                                  primary={
+                                    <Typography sx={{ color: field.reqd ? 'error.main' : 'inherit' }}>
+                                      {field.label} [{field.fieldtype}] {field.reqd ? <span style={{ color: '#ff1744' }}>*</span> : ""}
+                                    </Typography>
+                                  }
+                                />
+                              </ListItem>
+                            )
+                          ))}
+                        </React.Fragment>
                     ))}
                   </List>
 
