@@ -166,6 +166,68 @@ function FileUpload({ connectionId, onUpload }) {
                 onClick={() => setOpenModal(true)}>
                 Select Fields ({selectedFields.length} selected)
               </Button>
+
+              <Modal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                aria-labelledby="field-selection-modal"
+              >
+                <Box sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 400,
+                  bgcolor: 'background.paper',
+                  boxShadow: 24,
+                  p: 4,
+                  maxHeight: '80vh',
+                  overflow: 'auto'
+                }}>
+                  <Typography variant="h6" gutterBottom>
+                    Select Fields
+                  </Typography>
+                  <FormControlLabel
+                    control={<Checkbox checked={selectAll} onChange={(e) => handleSelectAll(e.target.checked)} />}
+                    label="Select All Fields"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={selectMandatory} onChange={(e) => handleSelectMandatory(e.target.checked)} />}
+                    label="Select Mandatory Fields"
+                  />
+                  <List>
+                    {schema?.docs[0]?.fields
+                      .filter(field => !field.hidden && !field.read_only &&
+                        !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype))
+                      .map(field => (
+                        <ListItem key={field.fieldname}>
+                          <FormControlLabel
+                            sx={{
+                              bgcolor: 'background.paper',
+                              p: 1,
+                              borderRadius: 1,
+                              '&:hover': { bgcolor: 'action.hover' }
+                            }}
+                            control={
+                              <Checkbox
+                                checked={selectedFields.includes(field.fieldname)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedFields([...selectedFields, field.fieldname]);
+                                  } else {
+                                    setSelectedFields(selectedFields.filter(f => f !== field.fieldname));
+                                  }
+                                }}
+                              />
+                            }
+                            label={`${field.label} ${field.reqd ? '*' : ''}`}
+                          />
+                        </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </Modal>
+
               <Button
                 variant="outlined"
                 onClick={async () => {
