@@ -126,7 +126,7 @@ def get_template(connection_id):
                 if child_doc and 'fields' in child_doc:
                     child_fields = [f for f in child_doc['fields']
                                   if not f['hidden'] and not f['read_only'] and
-                                  not f['fieldtype'] in ['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only']
+                                  not f['fieldtype'] in ['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only']]
 
                     child_table_info[field['fieldname']] = {
                         'fields': child_fields,
