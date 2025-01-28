@@ -33,7 +33,7 @@ function FileUpload({ connectionId, onUpload }) {
         .filter(field => !field.hidden && !field.read_only && 
           !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
           !field.fieldtype.endsWith('Link'))
-        .map(field => field.label);
+        .map(field => field.fieldname);
       
       // Get child table fields
       const childFields = schema.docs[0].fields
@@ -44,7 +44,7 @@ function FileUpload({ connectionId, onUpload }) {
             .filter(field => !field.hidden && !field.read_only &&
               !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
               !field.fieldtype.endsWith('Link'))
-            .map(field => `${tableField.label}.${field.label}`) : [];
+fieldname}.${field.fieldname}`) : [];
         });
 
       setSelectedFields([...mainFields, ...childFields]);
@@ -248,12 +248,12 @@ function FileUpload({ connectionId, onUpload }) {
                                 <ListItemIcon>
                                   <Checkbox
                                     edge="start"
-                                    checked={selectedFields.includes(`${tableField.label}.${field.label}`)}
+                                    checked={selectedFields.includes(`${tableField.fieldname}.${field.fieldname}`)}
                                     onChange={(e) => {
                                       if (e.target.checked) {
-                                        setSelectedFields([...selectedFields, `${tableField.label}.${field.label}`]);
+                                        setSelectedFields([...selectedFields, `${tableField.fieldname}.${field.fieldname}`]);
                                       } else {
-                                        setSelectedFields(selectedFields.filter(f => f !== `${tableField.label}.${field.label}`));
+                                        setSelectedFields(selectedFields.filter(f => f !== `${tableField.fieldname}.${field.fieldname}`));
                                       }
                                     }}
                                   />

@@ -91,11 +91,11 @@ def get_template(connection_id):
                 if child_doc and 'fields' in child_doc:
                     # Add child fields with qualified names
                     for child_field in child_doc['fields']:
-                        if 'label' in child_field:
-                            qualified_name = f"{field['label']}.{child_field['label']}"
+                        if 'fieldname' in child_field:
+                            qualified_name = f"{field['fieldname']}.{child_field['fieldname']}"
                             all_fields[qualified_name] = child_field['fieldtype']
-            elif 'label' in field:
-                all_fields[field['label']] = field['fieldtype']
+            elif 'fieldname' in field:
+                all_fields[field['fieldname']] = field['fieldtype']
 
         # Create column headers with field types
         columns = []
