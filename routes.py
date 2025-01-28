@@ -113,8 +113,12 @@ def get_template(connection_id):
         columns = []
         for field_name, field_type in ordered_fields:
             if field_type:  # Only add fields that we found types for
-                if field_type.startswith('Link'):
-                    columns.append(f"{field_name} [{field_type}]") #removed -{options} as options was not defined
+                if field_type.endswith('Link'):
+                    # Extract the actual field type and options from combined string
+                    type_parts = field_type.split(' [')
+                    base_type = type_parts[0]
+                    options = type_parts[1][:-1] if len(type_parts) > 1 else ''
+                    columns.append(f"{field_name} [{base_type}] [{options}]")
                 else:
                     columns.append(f"{field_name} [{field_type}]")
 
@@ -159,7 +163,7 @@ def get_template(connection_id):
         return send_file(
             excel_file,
             as_attachment=True,
-            download_name=f'{doctype}_template.xlsx', #removed link_options_string as it was not defined
+            download_name=f'{doctype}_template.xlsx',
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
 
