@@ -1,0 +1,27 @@
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /home/runner/workspace/static/js/components/FileUpload.jsx: Identifier directly after number. (1:1)
+
+[0m[31m[1m>[22m[39m[90m 1 |[39m [35m4[39m[36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m"react"[39m[33m;[39m
+ [90m   |[39m  [31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { uploadFile[33m,[39m getDoctypes } [36mfrom[39m [32m"../services/api"[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { 
+ [90m 4 |[39m   [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mTypography[39m[33m,[39m [33mTextField[39m[33m,[39m [0m
+    at constructor (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:360:19)
+    at JSXParserMixin.raise (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:3327:19)
+    at JSXParserMixin.readNumber (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:3198:18)
+    at JSXParserMixin.getTokenFromCode (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:2982:14)
+    at JSXParserMixin.getTokenFromCode (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:6970:11)
+    at JSXParserMixin.nextToken (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:2510:10)
+    at JSXParserMixin.parse (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:14108:10)
+    at parse (/home/runner/workspace/node_modules/@babel/parser/lib/index.js:14144:38)
+    at parser (/home/runner/workspace/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next ()
+    at normalizeFile (/home/runner/workspace/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next ()
+    at run (/home/runner/workspace/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next ()
+    at transform (/home/runner/workspace/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next ()
+    at step (/home/runner/workspace/node_modules/gensync/index.js:261:32)
+    at /home/runner/workspace/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
