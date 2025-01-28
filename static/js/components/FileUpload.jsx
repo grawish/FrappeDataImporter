@@ -202,7 +202,15 @@ function FileUpload({ connectionId, onUpload }) {
                         bgcolor: 'background.paper',
                         p: 1,
                         borderRadius: 1,
-                        '&:hover': { bgcolor: 'action.hover' }
+                        '&:hover': { bgcolor: 'action.hover' },
+                        margin: 0,
+                        width: '100%',
+                        '& .MuiFormControlLabel-label': {
+                          flex: 1
+                        },
+                        '& .MuiCheckbox-root': {
+                          padding: '4px 9px'
+                        }
                       }}
                       control={
                         <Checkbox
