@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { uploadFile, getDoctypes } from "../services/api";
 import { 
@@ -121,7 +120,11 @@ function FileUpload({ connectionId, onUpload }) {
                         }}
                       />
                     }
-                    label={field.label}
+                    label={
+                      <Typography sx={{ color: field.reqd ? 'error.main' : 'inherit' }}>
+                        {field.label} {field.reqd && <span style={{ color: '#ff1744' }}>*</span>}
+                      </Typography>
+                    }
                   />
                 )
               ))}
@@ -139,9 +142,9 @@ function FileUpload({ connectionId, onUpload }) {
                         fields: selectedFields
                       })
                     });
-                    
+
                     if (!response.ok) throw new Error('Failed to generate template');
-                    
+
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
