@@ -28,7 +28,9 @@ function FileUpload({ connectionId, onUpload }) {
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
     if (checked) {
-      const allFields = schema.docs[0].fields
+      const allFields = schema.docs.filter((d)=>{
+        return d.name === selectedDoctype;
+      })[0].fields
         .filter(field => !field.hidden && !field.read_only && 
           !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
           !field.fieldtype.endsWith('Link'))
@@ -193,12 +195,12 @@ function FileUpload({ connectionId, onUpload }) {
                           <ListItemIcon>
                             <Checkbox
                               edge="start"
-                              checked={selectedFields.includes(field.label)}
+                              checked={selectedFields.includes(field.fieldname)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedFields([...selectedFields, field.label]);
+                                  setSelectedFields([...selectedFields, field.fieldname]);
                                 } else {
-                                  setSelectedFields(selectedFields.filter(f => f !== field.label));
+                                  setSelectedFields(selectedFields.filter(f => f !== field.fieldname));
                                 }
                               }}
                             />
@@ -206,7 +208,7 @@ function FileUpload({ connectionId, onUpload }) {
                           <ListItemText 
                             primary={
                               <Typography sx={{ color: field.reqd ? 'error.main' : 'inherit' }}>
-                                {field.label} {field.reqd && <span style={{ color: '#ff1744' }}>*</span>}
+                                {field.label} {field.reqd ? <span style={{ color: '#ff1744' }}>*</span> : ""}
                               </Typography>
                             }
                           />
