@@ -113,13 +113,6 @@ def get_template(connection_id):
         columns = []
         for field_name, field_type in ordered_fields:
             if field_type:  # Only add fields that we found types for
-                if field_type.endswith('Link'):
-                    # Extract the actual field type and options from combined string
-                    type_parts = field_type.split(' [')
-                    base_type = type_parts[0]
-                    options = type_parts[1][:-1] if len(type_parts) > 1 else ''
-                    columns.append(f"{field_name} [{base_type}] [{options}]")
-                else:
                     columns.append(f"{field_name} [{field_type}]")
 
         # Process columns to handle child tables
@@ -133,8 +126,7 @@ def get_template(connection_id):
                 if child_doc and 'fields' in child_doc:
                     child_fields = [f for f in child_doc['fields']
                                   if not f['hidden'] and not f['read_only'] and
-                                  not f['fieldtype'] in ['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'] and
-                                  not f['fieldtype'].endswith('Link')]
+                                  not f['fieldtype'] in ['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only']
 
                     child_table_info[field['fieldname']] = {
                         'fields': child_fields,
@@ -144,8 +136,14 @@ def get_template(connection_id):
                     # Add numbered columns for each child field
                     for i in range(1, max_rows + 1):
                         for child_field in child_fields:
-                            col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype']}]"
+                            if child_field['fieldtype']=='Link':
+                                col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype'] [{child_field.get('options', '')}]}]"
+                            else:
+                                col_name = f"{field['fieldname']}.{i}.{child_field['fieldname']} [{child_field['fieldtype']}]"
                             final_columns.append(col_name)
+            elif field['fieldtype'] == 'Link':
+                # Extract the actual field type and options from combined string
+                final_columns.append(f"{field['fieldname']} [{field['fieldtype']}] [{field['options']}]")
             else:
                 if field['fieldname'] in selected_fields:
                     final_columns.append(f"{field['fieldname']} [{field['fieldtype']}]")
