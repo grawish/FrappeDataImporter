@@ -193,12 +193,12 @@ function FileUpload({ connectionId, onUpload }) {
                           <ListItemIcon>
                             <Checkbox
                               edge="start"
-                              checked={selectedFields.includes(field.fieldname)}
+                              checked={selectedFields.includes(field.label)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedFields([...selectedFields, field.fieldname]);
+                                  setSelectedFields([...selectedFields, field.label]);
                                 } else {
-                                  setSelectedFields(selectedFields.filter(f => f !== field.fieldname));
+                                  setSelectedFields(selectedFields.filter(f => f !== field.label));
                                 }
                               }}
                             />
