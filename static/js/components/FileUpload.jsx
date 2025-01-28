@@ -29,7 +29,7 @@ function FileUpload({ connectionId, onUpload }) {
 
   useEffect(() => {
     // Fetch config.json
-    fetch('config.json')
+    fetch('/static/js/config.json')
       .then(response => response.json())
       .then(data => setConfig(data))
       .catch(error => console.error('Error loading config.json:', error));
