@@ -31,8 +31,7 @@ function FileUpload({ connectionId, onUpload }) {
       // Get main fields
       const mainFields = schema.docs[0].fields
         .filter(field => !field.hidden && !field.read_only && 
-          !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
-          !field.fieldtype.endsWith('Link'))
+          !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
         .map(field => field.fieldname);
 
       // Get child table fields
@@ -42,8 +41,7 @@ function FileUpload({ connectionId, onUpload }) {
           const childDoc = schema.docs.find(d => d.name === tableField.options);
           return childDoc ? childDoc.fields
             .filter(field => !field.hidden && !field.read_only &&
-              !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
-              !field.fieldtype.endsWith('Link'))
+              !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
             .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
         });
 
@@ -58,8 +56,7 @@ function FileUpload({ connectionId, onUpload }) {
     setSelectMandatory(checked);
     const mandatoryFields = schema.docs[0].fields
       .filter(field => !field.hidden && !field.read_only && field.reqd &&
-        !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
-        !field.fieldtype.endsWith('Link'))
+        !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
       .map(field => field.label);
 
     if (checked) {
@@ -205,8 +202,7 @@ function FileUpload({ connectionId, onUpload }) {
                     </Typography>
                     {schema.docs[0].fields.map((field,idx) => (
                       !field.hidden && !field.read_only && 
-                      !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
-                      !field.fieldtype.endsWith('Link') && (
+                      !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) && (
                         <ListItem key={idx} dense>
                           <ListItemIcon>
                             <Checkbox
@@ -242,8 +238,7 @@ function FileUpload({ connectionId, onUpload }) {
                           </Typography>
                           {schema.docs.find(d => d.name === tableField.options)?.fields.map((field, fieldIdx) => (
                             !field.hidden && !field.read_only &&
-                            !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
-                            !field.fieldtype.endsWith('Link') && (
+                            !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) && (
                               <ListItem key={fieldIdx} dense sx={{ pl: 4 }}>
                                 <ListItemIcon>
                                   <Checkbox
