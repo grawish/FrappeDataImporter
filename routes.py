@@ -91,16 +91,18 @@ def get_template(connection_id):
                 if child_doc and 'fields' in child_doc:
                     # Add child fields with qualified names
                     for child_field in child_doc['fields']:
-                        qualified_name = f"{field['label']}.{child_field['label']}"
-                        all_fields[qualified_name] = child_field['fieldtype']
-            else:
+                        if 'label' in child_field:
+                            qualified_name = f"{field['label']}.{child_field['label']}"
+                            all_fields[qualified_name] = child_field['fieldtype']
+            elif 'label' in field:
                 all_fields[field['label']] = field['fieldtype']
 
         # Create column headers with field types
         columns = []
         for field in selected_fields:
             fieldtype = all_fields.get(field, '')
-            columns.append(f"{field} [{fieldtype}]")
+            if fieldtype:  # Only add fields that we found types for
+                columns.append(f"{field} [{fieldtype}]")
         
         # Create Excel template with formatted headers
         df = pd.DataFrame(columns=columns)

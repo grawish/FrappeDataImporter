@@ -33,7 +33,7 @@ function FileUpload({ connectionId, onUpload }) {
         .filter(field => !field.hidden && !field.read_only && 
           !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
           !field.fieldtype.endsWith('Link'))
-        .map(field => field.fieldname);
+        .map(field => field.label);
       
       // Get child table fields
       const childFields = schema.docs[0].fields
