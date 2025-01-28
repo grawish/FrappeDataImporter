@@ -132,7 +132,7 @@ function FileUpload({ connectionId, onUpload }) {
               <Button variant="contained" onClick={() => setOpenModal(true)} sx={{ mb: 2 }}>
                 Select Fields ({selectedFields.length} selected)
               </Button>
-              
+
               <Modal
                 open={openModal}
                 onClose={() => setOpenModal(false)}
@@ -153,7 +153,7 @@ function FileUpload({ connectionId, onUpload }) {
                   <Typography variant="h6" component="h2" gutterBottom>
                     Select Fields
                   </Typography>
-                  
+
                   <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                     <FormControlLabel
                       control={
@@ -182,12 +182,12 @@ function FileUpload({ connectionId, onUpload }) {
                           <ListItemIcon>
                             <Checkbox
                               edge="start"
-                              checked={selectedFields.includes(field.label)}
+                              checked={selectedFields.includes(field.fieldname)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedFields([...selectedFields, field.label]);
+                                  setSelectedFields([...selectedFields, field.fieldname]);
                                 } else {
-                                  setSelectedFields(selectedFields.filter(f => f !== field.label));
+                                  setSelectedFields(selectedFields.filter(f => f !== field.fieldname));
                                 }
                               }}
                             />
