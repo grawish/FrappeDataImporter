@@ -3,7 +3,9 @@ import { uploadFile, getDoctypes } from "../services/api";
 import { 
   Card, CardContent, Typography, TextField, 
   Button, LinearProgress, Alert, Autocomplete,
-  Box, Input, Checkbox, FormControlLabel
+  Box, Input, Checkbox, FormControlLabel, Modal,
+  List, ListItem, ListItemIcon, ListItemText,
+  Paper
 } from '@mui/material';
 import { getSchema } from '../services/api';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -19,6 +21,22 @@ function FileUpload({ connectionId, onUpload }) {
   const [searchInput, setSearchInput] = useState("");
   const [schema, setSchema] = useState(null);
   const [selectedFields, setSelectedFields] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      const allFields = schema.docs[0].fields
+        .filter(field => !field.hidden && !field.read_only && 
+          !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+          !field.fieldtype.endsWith('Link'))
+        .map(field => field.label);
+      setSelectedFields(allFields);
+    } else {
+      setSelectedFields([]);
+    }
+  };
 
   useEffect(() => {
     if (selectedDoctype) {
@@ -101,33 +119,78 @@ function FileUpload({ connectionId, onUpload }) {
           />
           {schema && (
             <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle1" gutterBottom>Select Fields for Template</Typography>
-              {schema.docs[0].fields.map(field => (
-                !field.hidden && !field.read_only && 
-                !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
-                !field.fieldtype.endsWith('Link') && (
+              <Button variant="contained" onClick={() => setOpenModal(true)} sx={{ mb: 2 }}>
+                Select Fields ({selectedFields.length} selected)
+              </Button>
+              
+              <Modal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                aria-labelledby="field-selection-modal"
+              >
+                <Box sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 400,
+                  bgcolor: 'background.paper',
+                  boxShadow: 24,
+                  p: 4,
+                  maxHeight: '80vh',
+                  overflow: 'auto'
+                }}>
+                  <Typography variant="h6" component="h2" gutterBottom>
+                    Select Fields
+                  </Typography>
+                  
                   <FormControlLabel
-                    key={field.fieldname}
                     control={
                       <Checkbox
-                        checked={selectedFields.includes(field.label)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedFields([...selectedFields, field.label]);
-                          } else {
-                            setSelectedFields(selectedFields.filter(f => f !== field.label));
-                          }
-                        }}
+                        checked={selectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
                       />
                     }
-                    label={
-                      <Typography sx={{ color: field.reqd ? 'error.main' : 'inherit' }}>
-                        {field.label} {field.reqd && <span style={{ color: '#ff1744' }}>*</span>}
-                      </Typography>
-                    }
+                    label="Select All Fields"
                   />
-                )
-              ))}
+
+                  <List sx={{ mt: 2 }}>
+                    {schema.docs[0].fields.map(field => (
+                      !field.hidden && !field.read_only && 
+                      !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+                      !field.fieldtype.endsWith('Link') && (
+                        <ListItem key={field.fieldname} dense>
+                          <ListItemIcon>
+                            <Checkbox
+                              edge="start"
+                              checked={selectedFields.includes(field.label)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedFields([...selectedFields, field.label]);
+                                } else {
+                                  setSelectedFields(selectedFields.filter(f => f !== field.label));
+                                }
+                              }}
+                            />
+                          </ListItemIcon>
+                          <ListItemText 
+                            primary={
+                              <Typography sx={{ color: field.reqd ? 'error.main' : 'inherit' }}>
+                                {field.label} {field.reqd && <span style={{ color: '#ff1744' }}>*</span>}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                      )
+                    ))}
+                  </List>
+
+                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                    <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                    <Button variant="contained" onClick={() => setOpenModal(false)}>Done</Button>
+                  </Box>
+                </Box>
+              </Modal>
               <Button
                 variant="outlined"
                 onClick={async () => {
