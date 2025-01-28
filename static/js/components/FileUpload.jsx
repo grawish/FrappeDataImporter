@@ -38,6 +38,16 @@ function FileUpload({ connectionId, onUpload }) {
     }
   };
 
+  const handleSelectMandatory = () => {
+    const mandatoryFields = schema.docs[0].fields
+      .filter(field => !field.hidden && !field.read_only && field.reqd &&
+        !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+        !field.fieldtype.endsWith('Link'))
+      .map(field => field.label);
+    setSelectedFields(mandatoryFields);
+    setSelectAll(false);
+  };
+
   useEffect(() => {
     if (selectedDoctype) {
       getSchema(connectionId, selectedDoctype)
@@ -144,15 +154,24 @@ function FileUpload({ connectionId, onUpload }) {
                     Select Fields
                   </Typography>
                   
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={selectAll}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                      />
-                    }
-                    label="Select All Fields"
-                  />
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={selectAll}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                        />
+                      }
+                      label="Select All Fields"
+                    />
+                    <Button 
+                      variant="outlined"
+                      onClick={handleSelectMandatory}
+                      size="small"
+                    >
+                      Select Mandatory Fields
+                    </Button>
+                  </Box>
 
                   <List sx={{ mt: 2 }}>
                     {schema.docs[0].fields.map(field => (
