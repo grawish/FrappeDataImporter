@@ -228,9 +228,21 @@ function FileUpload({ connectionId, onUpload }) {
                     <FormControlLabel
                       sx={{
                         bgcolor: 'background.paper',
-                        p: 1,
+                        p: 1.5,
                         borderRadius: 1,
-                        '&:hover': { bgcolor: 'action.hover' }
+                        '&:hover': { bgcolor: 'action.hover' },
+                        margin: 0,
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        '& .MuiFormControlLabel-label': {
+                          flex: 1,
+                          ml: 1
+                        },
+                        '& .MuiCheckbox-root': {
+                          p: 0.5,
+                          mr: 1
+                        }
                       }}
                       control={
                         <Checkbox
@@ -244,9 +256,21 @@ function FileUpload({ connectionId, onUpload }) {
                     <FormControlLabel
                       sx={{
                         bgcolor: 'background.paper',
-                        p: 1,
+                        p: 1.5,
                         borderRadius: 1,
-                        '&:hover': { bgcolor: 'action.hover' }
+                        '&:hover': { bgcolor: 'action.hover' },
+                        margin: 0,
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        '& .MuiFormControlLabel-label': {
+                          flex: 1,
+                          ml: 1
+                        },
+                        '& .MuiCheckbox-root': {
+                          p: 0.5,
+                          mr: 1
+                        }
                       }}
                       control={
                         <Checkbox
