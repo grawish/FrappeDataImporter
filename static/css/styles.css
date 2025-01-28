@@ -157,3 +157,11 @@ h3 {
 .form-label {
   font-weight: 500;
 }
+
+.doctype-select-container {
+  position: relative;
+}
+
+.doctype-select-container input {
+  width: 100%;
+}

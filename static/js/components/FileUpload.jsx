@@ -115,18 +115,35 @@ function FileUpload({ connectionId, onUpload }) {
 
         <div className="mb-3">
           <label className="form-label">Select Doctype</label>
-          <select
-            className="form-select"
-            value={selectedDoctype}
-            onChange={(e) => setSelectedDoctype(e.target.value)}
-          >
-            <option value="">Choose a doctype...</option>
-            {doctypes.map((doctype) => (
-              <option key={doctype} value={doctype}>
-                {doctype}
-              </option>
-            ))}
-          </select>
+          <div className="doctype-select-container">
+            <input
+              type="text"
+              className="form-control mb-2"
+              placeholder="Search doctypes..."
+              onChange={(e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filtered = doctypes.filter(doctype => 
+                  doctype.toLowerCase().includes(searchTerm)
+                );
+                setDoctypes(filtered);
+                if (!searchTerm) {
+                  fetchDoctypes();
+                }
+              }}
+            />
+            <select
+              className="form-select"
+              value={selectedDoctype}
+              onChange={(e) => setSelectedDoctype(e.target.value)}
+            >
+              <option value="">Choose a doctype...</option>
+              {doctypes.map((doctype) => (
+                <option key={doctype} value={doctype}>
+                  {doctype}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="mb-3">
