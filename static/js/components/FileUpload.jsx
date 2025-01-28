@@ -96,17 +96,7 @@ function FileUpload({ connectionId, onUpload }) {
           )}
         </Box>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" gutterBottom>Batch Size</Typography>
-          <TextField
-            type="number"
-            value={batchSize}
-            onChange={(e) => setBatchSize(Math.max(1, parseInt(e.target.value) || 1))}
-            variant="outlined"
-            fullWidth
-            helperText="Number of records to process in each batch"
-          />
-        </Box>
+        
 
         <Box
           sx={{

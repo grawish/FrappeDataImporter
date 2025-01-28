@@ -145,13 +145,24 @@ def upload_file():
             os.remove(filepath)
             return jsonify({"status": "error", "message": "Unsupported file format"}), 400
 
+        # Calculate optimal batch size based on file size
+        file_size = os.path.getsize(filepath)
+        if file_size < 1024 * 1024:  # < 1MB
+            optimal_batch_size = 50
+        elif file_size < 5 * 1024 * 1024:  # < 5MB
+            optimal_batch_size = 100
+        elif file_size < 20 * 1024 * 1024:  # < 20MB
+            optimal_batch_size = 250
+        else:
+            optimal_batch_size = 500
+
         # Create import job
         job = ImportJob(
             frappe_url=request.form.get('frappe_url'),
             doctype=request.form.get('doctype'),
             total_rows=len(df),
             file_path=filepath,
-            batch_size=int(request.form.get('batch_size', 100))
+            batch_size=optimal_batch_size
         )
         db.session.add(job)
         db.session.commit()
