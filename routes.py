@@ -93,9 +93,15 @@ def get_template(connection_id):
                     for child_field in child_doc['fields']:
                         if 'fieldname' in child_field:
                             qualified_name = f"{field['fieldname']}.{child_field['fieldname']}"
-                            all_fields[qualified_name] = child_field['fieldtype']
+                            field_type = child_field['fieldtype']
+                            if field_type.endswith('Link'):
+                                field_type = f"{field_type} [{child_field.get('options', '')}]"
+                            all_fields[qualified_name] = field_type
             elif 'fieldname' in field:
-                all_fields[field['fieldname']] = field['fieldtype']
+                field_type = field['fieldtype']
+                if field_type.endswith('Link'):
+                    field_type = f"{field_type} [{field.get('options', '')}]"
+                all_fields[field['fieldname']] = field_type
 
         # Create column headers with field types
         columns = []
