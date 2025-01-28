@@ -85,6 +85,15 @@ function FileUpload({ connectionId, onUpload }) {
             )}
             sx={{ mb: 2 }}
           />
+          {selectedDoctype && (
+            <Button
+              variant="outlined"
+              onClick={() => window.open(`/api/template/${connectionId}?doctype=${encodeURIComponent(selectedDoctype)}`, '_blank')}
+              sx={{ mb: 2 }}
+            >
+              Download Template
+            </Button>
+          )}
         </Box>
 
         <Box sx={{ mb: 3 }}>

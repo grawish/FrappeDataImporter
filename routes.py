@@ -56,6 +56,50 @@ def get_schema(connection_id):
         logging.error(f"Error getting schema: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
+@app.route('/api/template/<connection_id>')
+def get_template(connection_id):
+    conn = FrappeConnection.query.get_or_404(connection_id)
+    doctype = request.args.get('doctype')
+    if not doctype:
+        return jsonify({"status": "error", "message": "Doctype is required"}), 400
+
+    try:
+        # Get doctype schema
+        response = requests.get(
+            f"{conn.url}/api/method/frappe.desk.form.load.getdoctype",
+            params={"doctype": doctype, "with_parent": 1},
+            headers={'Authorization': f'token {conn.api_key}:{conn.api_secret}'} if conn.api_key and conn.api_secret else None
+        )
+        
+        if not response.ok:
+            return jsonify({"status": "error", "message": "Failed to fetch schema"}), 400
+            
+        schema_data = response.json()
+        
+        # Create Excel template
+        df = pd.DataFrame(columns=[
+            field.get('label', '') 
+            for field in schema_data.get('docs', [{}])[0].get('fields', [])
+            if not field.get('hidden') and not field.get('read_only') 
+            and field.get('fieldtype') not in ['Section Break', 'Column Break', 'Tab Break']
+            and not field.get('fieldtype', '').endswith('Link') 
+        ])
+        
+        # Save to temporary file
+        excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
+        df.to_excel(excel_file, index=False)
+        
+        return send_file(
+            excel_file,
+            as_attachment=True,
+            download_name=f'{doctype}_template.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+
+    except Exception as e:
+        logging.error(f"Error generating template: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 400
+
 @app.route('/api/doctypes/<connection_id>', methods=['GET'])
 def get_doctypes(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
