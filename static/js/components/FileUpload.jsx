@@ -32,7 +32,7 @@ function FileUpload({ connectionId, onUpload }) {
         return d.name === selectedDoctype;
       })[0].fields
         .filter(field => !field.hidden && !field.read_only && 
-          !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+          !['Section Break', 'Column Break', 'Tab Break','Table', 'Read Only'].includes(field.fieldtype) &&
           !field.fieldtype.endsWith('Link'))
         .map(field => field.label);
       setSelectedFields(allFields);
@@ -46,7 +46,7 @@ function FileUpload({ connectionId, onUpload }) {
     setSelectMandatory(checked);
     const mandatoryFields = schema.docs[0].fields
       .filter(field => !field.hidden && !field.read_only && field.reqd &&
-        !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+        !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
         !field.fieldtype.endsWith('Link'))
       .map(field => field.label);
       
@@ -189,7 +189,7 @@ function FileUpload({ connectionId, onUpload }) {
                   <List sx={{ mt: 2 }}>
                     {schema.docs[0].fields.map((field,idx) => (
                       !field.hidden && !field.read_only && 
-                      !['Section Break', 'Column Break', 'Tab Break'].includes(field.fieldtype) &&
+                      !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype) &&
                       !field.fieldtype.endsWith('Link') && (
                         <ListItem key={idx} dense>
                           <ListItemIcon>
