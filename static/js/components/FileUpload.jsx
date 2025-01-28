@@ -1,4 +1,5 @@
-4import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect } from "react";
 import { uploadFile, getDoctypes } from "../services/api";
 import { 
   Card, CardContent, Typography, TextField, 
@@ -29,6 +30,8 @@ function FileUpload({ connectionId, onUpload }) {
         .catch(err => setError("Failed to load schema"));
     }
   }, [selectedDoctype]);
+
+  useEffect(() => {
     const fetchDoctypes = async () => {
       try {
         const response = await getDoctypes(connectionId);
@@ -156,8 +159,6 @@ function FileUpload({ connectionId, onUpload }) {
             </Box>
           )}
         </Box>
-
-        
 
         <Box
           sx={{
