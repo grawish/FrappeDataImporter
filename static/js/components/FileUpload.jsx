@@ -5,7 +5,7 @@ import {
   Button, LinearProgress, Alert, Autocomplete,
   Box, Input, Checkbox, FormControlLabel, Modal,
   List, ListItem, ListItemIcon, ListItemText,
-  Paper
+  Paper, Tabs, Tab
 } from '@mui/material';
 import { getSchema } from '../services/api';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -22,9 +22,7 @@ function FileUpload({ connectionId, onUpload }) {
   const [schema, setSchema] = useState(null);
   const [selectedFields, setSelectedFields] = useState([]);
   const [openModal, setOpenModal] = useState(false);
-  const [selectAll, setSelectAll] = useState(false);
-  const [selectMandatory, setSelectMandatory] = useState(false); // Added state for mandatory fields
-  const [selectRecommended, setSelectRecommended] = useState(false); // Added state for recommended fields
+  const [activeTab, setActiveTab] = useState('all');
   const [config, setConfig] = useState({}); // Added state for config
 
   useEffect(() => {
@@ -200,43 +198,30 @@ function FileUpload({ connectionId, onUpload }) {
                   <Typography variant="h6" gutterBottom>
                     Select Fields
                   </Typography>
-                  <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <FormControlLabel
-                      sx={{ 
-                        bgcolor: 'background.paper',
-                        p: 1,
-                        borderRadius: 1,
-                        '&:hover': { bgcolor: 'action.hover' }
-                      }}
-                      control={<Checkbox checked={selectAll} onChange={(e) => handleSelectAll(e.target.checked)} />}
-                      label="Select All Fields"
-                    />
-                    <FormControlLabel
-                      sx={{ 
-                        bgcolor: 'background.paper',
-                        p: 1,
-                        borderRadius: 1,
-                        '&:hover': { bgcolor: 'action.hover' }
-                      }}
-                      control={<Checkbox checked={selectMandatory} onChange={(e) => handleSelectMandatory(e.target.checked)} />}
-                      label="Select Mandatory Fields"
-                    />
-                    <FormControlLabel
-                      sx={{ 
-                        bgcolor: 'background.paper',
-                        p: 1,
-                        borderRadius: 1,
-                        '&:hover': { bgcolor: 'action.hover' }
-                      }}
-                      control={<Checkbox checked={selectRecommended} onChange={(e) => handleSelectRecommended(e.target.checked)} />}
-                      label="Select Recommended Fields"
-                    />
-                  </Box>
-                  
-                  <List>
+                  <Box sx={{ width: '100%', mb: 2 }}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                      <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+                        <Tab label="All Fields" value="all" />
+                        <Tab label="Mandatory Fields" value="mandatory" />
+                        <Tab label="Recommended Fields" value="recommended" />
+                      </Tabs>
+                    </Box>
+                    
+                    <List>
                     {schema?.docs[0]?.fields
-                      .filter(field => !field.hidden && !field.read_only &&
-                        !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype))
+                      .filter(field => {
+                        const baseFilter = !field.hidden && !field.read_only &&
+                          !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype);
+                        
+                        switch(activeTab) {
+                          case 'mandatory':
+                            return baseFilter && field.reqd;
+                          case 'recommended':
+                            return baseFilter && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
+                          default: // 'all'
+                            return baseFilter;
+                        }
+                      })
                       .map(field => (
                         <ListItem key={field.fieldname}>
                           <FormControlLabel
