@@ -62,6 +62,40 @@ function ConnectionForm({ onConnect }) {
             <Typography variant="h6" gutterBottom>Saved Connections</Typography>
             <Box sx={{ flexGrow: 1, mb: 3 }}>
               <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Card 
+                    sx={{ 
+                      cursor: 'pointer',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: 'action.hover',
+                      '&:hover': { boxShadow: 6 }
+                    }}
+                    onClick={() => {
+                      setFormData({
+                        url: '',
+                        username: '',
+                        password: ''
+                      });
+                      window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'smooth'
+                      });
+                    }}
+                  >
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" component="div">
+                        + New Connection
+                      </Typography>
+                      <Typography color="textSecondary">
+                        Add a new Frappe connection
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
                 {savedConnections.map((conn) => (
                   <Grid item xs={12} sm={6} md={4} key={conn.id}>
                     <Card 
