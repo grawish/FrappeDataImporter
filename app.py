@@ -39,6 +39,12 @@ db.init_app(app)
 from routes import api
 app.register_blueprint(api, url_prefix='/api')
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+from flask import render_template
+
 with app.app_context():
     import models
     db.create_all()
