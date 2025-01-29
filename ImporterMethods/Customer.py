@@ -1,28 +1,33 @@
-def validate(data):
-    field_info = []
+def get_field_mapping(key):
+    # Extract field info from the key format: "fieldname [fieldtype] [options]"
+    parts = key.split('[')
+    fieldname = parts[0].strip()
+
+    if len(parts) >= 2:
+        fieldtype = parts[1].strip().rstrip(']')
+
+        # Check if it's a Link field with options
+        if fieldtype == 'Link' and len(parts) >= 3:
+            options = parts[2].strip().rstrip(']')
+            return fieldname, fieldtype, options
+        else:
+            return fieldname, fieldtype, None
+    else:
+        return fieldname, None, None
+
+def validate(doctype, data):
     for key in data.keys():
-        # Extract field info from the key format: "fieldname [fieldtype] [options]"
-        parts = key.split('[')
-        fieldname = parts[0].strip()
+        fieldname, fieldtype, options = get_field_mapping(key)
+        fieldvalue = data[key]
         
-        if len(parts) >= 2:
-            fieldtype = parts[1].strip().rstrip(']')
-            
-            # Check if it's a Link field with options
-            if fieldtype == 'Link' and len(parts) >= 3:
-                options = parts[2].strip().rstrip(']')
-                field_info.append({
-                    'fieldname': fieldname,
-                    'fieldtype': fieldtype,
-                    'options': options
-                })
-            else:
-                field_info.append({
-                    'fieldname': fieldname,
-                    'fieldtype': fieldtype
-                })
-    
-    return field_info
+        if fieldtype == 'Select' and options:
+            if fieldvalue not in options.split(', '):
+                raise ValueError(f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}.")
+        elif fieldtype == 'Link' and options:
+            pass
+
+
+
 
 data = {
     "customer_name [Data]": "Hybrowlabs",
