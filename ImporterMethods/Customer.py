@@ -1,5 +1,7 @@
 import requests
 from models import FrappeConnection
+from flask import request
+
 
 def get_field_mapping(key):
     # Extract field info from the key format: "fieldname [fieldtype] [options]"
@@ -18,20 +20,24 @@ def get_field_mapping(key):
     else:
         return fieldname, None, None
 
-def validate(doctype, data):
+
+def validate(data):
     for key in data.keys():
         fieldname, fieldtype, options = get_field_mapping(key)
         fieldvalue = data[key]
-        
+
         if fieldtype == 'Select' and options:
             if fieldvalue not in options.split(', '):
-                raise ValueError(f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}.")
+                raise ValueError(
+                    f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}."
+                )
         elif fieldtype == 'Link' and options:
+            connection_id = request.form.get('connection_id')
             # Get connection details from the database
-            conn = FrappeConnection.query.first()  # You'll need to pass the correct connection
+            conn = FrappeConnection.query.get_or_404(connection_id)
             if not fieldvalue:  # Skip validation for empty values
                 continue
-                
+
             try:
                 response = requests.get(
                     f"{conn.url}/api/method/frappe.client.validate_link",
@@ -40,16 +46,19 @@ def validate(doctype, data):
                         "docname": fieldvalue,
                         "fields": ["name"]
                     },
-                    headers={'Authorization': f'token {conn.api_key}:{conn.api_secret}'} if conn.api_key and conn.api_secret else None
-                )
-                
+                    headers={
+                        'Authorization':
+                        f'token {conn.api_key}:{conn.api_secret}'
+                    } if conn.api_key and conn.api_secret else None)
+
                 if not response.ok:
-                    raise ValueError(f"Invalid value '{fieldvalue}' for field '{fieldname}'. Document not found in {options}.")
-                    
+                    raise ValueError(
+                        f"Invalid value '{fieldvalue}' for field '{fieldname}'. Document not found in {options}."
+                    )
+
             except Exception as e:
-                raise ValueError(f"Error validating link for {fieldname}: {str(e)}")
-
-
+                raise ValueError(
+                    f"Error validating link for {fieldname}: {str(e)}")
 
 
 data = {

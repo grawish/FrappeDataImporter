@@ -2,6 +2,7 @@
 import os
 import logging
 import pandas as pd
+from ImporterMethods.Customer import validate
 from flask import request, jsonify
 from werkzeug.utils import secure_filename
 from app import db
@@ -12,6 +13,10 @@ UPLOAD_FOLDER = 'uploads'
 
 @api.route('/upload', methods=['POST'])
 def upload_file():
+    
+    connection_id = request.form.get('connection_id')
+    if not connection_id:
+        return jsonify({"status": "error", "message": "No connection ID provided"}), 400
     if 'file' not in request.files:
         return jsonify({"status": "error", "message": "No file provided"}), 400
 
@@ -29,6 +34,9 @@ def upload_file():
             os.remove(filepath)
             return jsonify({"status": "error", "message": "Unsupported file format"}), 400
 
+        validate(df.to_dict(orient='records'))
+
+        
         file_size = os.path.getsize(filepath)
         optimal_batch_size = 500 if file_size >= 20 * 1024 * 1024 else (
             250 if file_size >= 5 * 1024 * 1024 else (
