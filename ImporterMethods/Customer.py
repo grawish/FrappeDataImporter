@@ -24,7 +24,7 @@ def validate_all(data_list):
     all_errors = []
     for idx, data in enumerate(data_list):
         row_errors = validate(data)
-        if row_errors:
+        if row_errors and len(row_errors) > 0:
             all_errors.append({
                 'row': idx + 1,
                 'errors': row_errors
@@ -62,10 +62,11 @@ def validate(data):
                     } if conn.api_key and conn.api_secret else None)
 
                 if not response.ok:
-                    raise ValueError(
+                    errors.append(
                         f"Invalid value '{fieldvalue}' for field '{fieldname}'. Document not found in {options}."
                     )
 
             except Exception as e:
-                raise ValueError(
+                errors.append(
                     f"Error validating link for {fieldname}: {str(e)}")
+    return errors

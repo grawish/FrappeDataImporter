@@ -36,10 +36,7 @@ def upload_file():
         validation_errors = validate_all(df.to_dict(orient='records'))
         if validation_errors:
             os.remove(filepath)
-            return jsonify({
-                "status": "error",
-                "validation_errors": validation_errors
-            }), 400
+            raise ValueError(f"Validation errors: {validation_errors}")
 
         file_size = os.path.getsize(filepath)
         optimal_batch_size = 500 if file_size >= 20 * 1024 * 1024 else (
