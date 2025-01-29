@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connectToFrappe, getConnections, deleteConnection } from '../services/api';
 import { Card, CardContent, CardActions, Typography, TextField, Button, Grid, Box, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 function ConnectionForm({ onConnect }) {
   const [formData, setFormData] = useState({
