@@ -206,7 +206,6 @@ function FileUpload({ connectionId, onUpload }) {
                         <Tab label="Recommended Fields" value="recommended" />
                       </Tabs>
                     </Box>
-                    
                     <List>
                     {schema?.docs[0]?.fields
                       .filter(field => {
@@ -257,7 +256,8 @@ function FileUpload({ connectionId, onUpload }) {
                           />
                         </ListItem>
                     ))}
-                  </List>
+                    </List>
+                  </Box>
                 </Box>
               </Modal>
 
