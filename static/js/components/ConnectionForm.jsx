@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
-import { connectToFrappe } from '../services/api';
+import { connectToFrappe, getConnections } from '../services/api';
+import { Card, CardContent, Typography, TextField, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
 
 function ConnectionForm({ onConnect }) {
   const [formData, setFormData] = useState({
@@ -8,6 +10,23 @@ function ConnectionForm({ onConnect }) {
     password: ''
   });
   const [error, setError] = useState('');
+  const [savedConnections, setSavedConnections] = useState([]);
+
+  useEffect(() => {
+    const connection = localStorage.getItem('connection');
+    if (connection) {
+      onConnect(JSON.parse(connection).connection_id);
+    }
+    
+    // Fetch saved connections
+    getConnections()
+      .then(response => {
+        if (response.status === 'success') {
+          setSavedConnections(response.connections);
+        }
+      })
+      .catch(err => console.error('Failed to fetch connections:', err));
+  }, [onConnect]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,7 +34,6 @@ function ConnectionForm({ onConnect }) {
       const response = await connectToFrappe(formData);
       if (response.status === 'success') {
         onConnect(response.connection_id);
-        // add connection details in localstorage
         localStorage.setItem('connection', JSON.stringify(response));
       } else {
         setError(response.message);
@@ -25,56 +43,73 @@ function ConnectionForm({ onConnect }) {
     }
   };
 
-  useEffect(() => {
-    const connection = localStorage.getItem('connection');
-    if (connection) {
-      onConnect(JSON.parse(connection).connection_id);
-    }
-  }, [onConnect]);
+  const handleSelectConnection = (connection) => {
+    setFormData({
+      ...formData,
+      url: connection.url,
+      username: connection.username
+    });
+  };
 
   return (
-    <div className="card">
-      <div className="card-body">
-        <h3>Connect to Frappe Instance</h3>
-        {error && <div className="alert alert-danger">{error}</div>}
+    <Card>
+      <CardContent>
+        <Typography variant="h5" gutterBottom>Connect to Frappe Instance</Typography>
+        {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
+        
+        {savedConnections.length > 0 && (
+          <>
+            <Typography variant="h6" gutterBottom>Saved Connections</Typography>
+            <List sx={{ mb: 3 }}>
+              {savedConnections.map((conn) => (
+                <React.Fragment key={conn.id}>
+                  <ListItem button onClick={() => handleSelectConnection(conn)}>
+                    <ListItemText 
+                      primary={conn.url}
+                      secondary={`Username: ${conn.username} | Created: ${new Date(conn.created_at).toLocaleDateString()}`}
+                    />
+                  </ListItem>
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
+          </>
+        )}
+
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Frappe URL</label>
-            <input
-              type="url"
-              className="form-control"
-              value={formData.url}
-              autoComplete={"on"}
-              onChange={(e) => setFormData({...formData, url: e.target.value})}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Username</label>
-            <input
-              type="text"
-              className="form-control"
-              value={formData.username}
-              autoComplete={"username webauthn"}
-              onChange={(e) => setFormData({...formData, username: e.target.value})}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-control"
-              autoComplete={"current-password webauthn"}
-              value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
-              required
-            />
-          </div>
-          <button type="submit" className="btn btn-primary">Connect</button>
+          <TextField
+            fullWidth
+            label="Frappe URL"
+            type="url"
+            value={formData.url}
+            onChange={(e) => setFormData({...formData, url: e.target.value})}
+            required
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Username"
+            type="text"
+            value={formData.username}
+            onChange={(e) => setFormData({...formData, username: e.target.value})}
+            required
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            required
+            sx={{ mb: 2 }}
+          />
+          <Button type="submit" variant="contained" color="primary">
+            Connect
+          </Button>
         </form>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

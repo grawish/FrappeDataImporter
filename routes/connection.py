@@ -13,6 +13,25 @@ def connect_frappe():
             username=data['username']
         )
         conn.set_password(data['password'])
+
+@api.route('/connections', methods=['GET'])
+def get_connections():
+    try:
+        connections = FrappeConnection.query.all()
+        return jsonify({
+            "status": "success",
+            "connections": [
+                {
+                    "id": conn.id,
+                    "url": conn.url,
+                    "username": conn.username,
+                    "created_at": conn.created_at.isoformat()
+                } for conn in connections
+            ]
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
         db.session.add(conn)
         db.session.commit()
         return jsonify({"status": "success", "connection_id": conn.id})

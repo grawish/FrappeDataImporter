@@ -1,5 +1,12 @@
 const API_BASE_URL = window.location.origin + '/api';
 
+export async function getConnections() {
+  const response = await fetch(`${API_BASE_URL}/connections`, {
+    credentials: 'include'
+  });
+  return response.json();
+}
+
 export async function connectToFrappe(credentials) {
   const response = await fetch(`${API_BASE_URL}/connect`, {
     method: 'POST',
