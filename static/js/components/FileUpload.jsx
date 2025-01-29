@@ -206,6 +206,51 @@ function FileUpload({ connectionId, onUpload }) {
                         <Tab label="All Fields" value="all" />
                       </Tabs>
                     </Box>
+                    <Box sx={{ mb: 2 }}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={
+                              schema?.docs[0]?.fields.filter(field => {
+                                const baseFilter = !field.hidden && !field.read_only &&
+                                  !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype);
+                                
+                                switch(activeTab) {
+                                  case 'mandatory':
+                                    return baseFilter && field.reqd;
+                                  case 'recommended':
+                                    return baseFilter && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
+                                  default: // 'all'
+                                    return baseFilter;
+                                }
+                              }).every(field => selectedFields.includes(field.fieldname))
+                            }
+                            onChange={(e) => {
+                              const filteredFields = schema?.docs[0]?.fields.filter(field => {
+                                const baseFilter = !field.hidden && !field.read_only &&
+                                  !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype);
+                                
+                                switch(activeTab) {
+                                  case 'mandatory':
+                                    return baseFilter && field.reqd;
+                                  case 'recommended':
+                                    return baseFilter && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
+                                  default: // 'all'
+                                    return baseFilter;
+                                }
+                              }).map(field => field.fieldname);
+
+                              if (e.target.checked) {
+                                setSelectedFields([...new Set([...selectedFields, ...filteredFields])]);
+                              } else {
+                                setSelectedFields(selectedFields.filter(field => !filteredFields.includes(field)));
+                              }
+                            }}
+                          />
+                        }
+                        label="Select All"
+                      />
+                    </Box>
                     <List>
                     {schema?.docs[0]?.fields
                       .filter(field => {
