@@ -79,6 +79,18 @@ function FileUpload({ connectionId, onUpload }) {
     }
   };
 
+  const handleSelectRecommended = (checked) => {
+    setSelectRecommended(checked);
+    if (checked && selectedDoctype && config.recommended_fields) {
+      const recommendedFields = config.recommended_fields[selectedDoctype] || [];
+      setSelectedFields(recommendedFields);
+      setSelectAll(false);
+      setSelectMandatory(false);
+    } else {
+      setSelectedFields([]);
+    }
+  };
+
   useEffect(() => {
     if (selectedDoctype) {
       getSchema(connectionId, selectedDoctype)
@@ -195,7 +207,10 @@ function FileUpload({ connectionId, onUpload }) {
                     control={<Checkbox checked={selectMandatory} onChange={(e) => handleSelectMandatory(e.target.checked)} />}
                     label="Select Mandatory Fields"
                   />
-
+                  <FormControlLabel
+                    control={<Checkbox checked={selectRecommended} onChange={(e) => handleSelectRecommended(e.target.checked)} />}
+                    label="Select Recommended Fields"
+                  />
                   
                   <List>
                     {schema?.docs[0]?.fields
