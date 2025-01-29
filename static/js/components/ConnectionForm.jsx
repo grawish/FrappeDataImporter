@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connectToFrappe, getConnections, deleteConnection } from '../services/api';
-import { Card, CardContent, Typography, TextField, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
+import { Card, CardContent, Typography, TextField, Button, List, ListItem, ListItemText, Divider, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function ConnectionForm({ onConnect }) {
   const [formData, setFormData] = useState({
@@ -66,8 +67,8 @@ function ConnectionForm({ onConnect }) {
                     button 
                     onClick={() => handleSelectConnection(conn)}
                     secondaryAction={
-                      <Button 
-                        color="error" 
+                      <IconButton
+                        color="error"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (window.confirm('Are you sure you want to delete this connection?')) {
@@ -79,8 +80,8 @@ function ConnectionForm({ onConnect }) {
                           }
                         }}
                       >
-                        Delete
-                      </Button>
+                        <DeleteIcon />
+                      </IconButton>
                     }
                   >
                     <ListItemText 
