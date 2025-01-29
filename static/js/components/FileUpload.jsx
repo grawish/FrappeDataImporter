@@ -189,28 +189,49 @@ function FileUpload({ connectionId, onUpload }) {
                   top: '50%',
                   left: '50%',
                   transform: 'translate(-50%, -50%)',
-                  width: 400,
+                  width: 500,
                   bgcolor: 'background.paper',
                   boxShadow: 24,
                   p: 4,
                   maxHeight: '80vh',
-                  overflow: 'auto'
+                  overflow: 'auto',
+                  borderRadius: 2
                 }}>
                   <Typography variant="h6" gutterBottom>
                     Select Fields
                   </Typography>
-                  <FormControlLabel
-                    control={<Checkbox checked={selectAll} onChange={(e) => handleSelectAll(e.target.checked)} />}
-                    label="Select All Fields"
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={selectMandatory} onChange={(e) => handleSelectMandatory(e.target.checked)} />}
-                    label="Select Mandatory Fields"
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={selectRecommended} onChange={(e) => handleSelectRecommended(e.target.checked)} />}
-                    label="Select Recommended Fields"
-                  />
+                  <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <FormControlLabel
+                      sx={{ 
+                        bgcolor: 'background.paper',
+                        p: 1,
+                        borderRadius: 1,
+                        '&:hover': { bgcolor: 'action.hover' }
+                      }}
+                      control={<Checkbox checked={selectAll} onChange={(e) => handleSelectAll(e.target.checked)} />}
+                      label="Select All Fields"
+                    />
+                    <FormControlLabel
+                      sx={{ 
+                        bgcolor: 'background.paper',
+                        p: 1,
+                        borderRadius: 1,
+                        '&:hover': { bgcolor: 'action.hover' }
+                      }}
+                      control={<Checkbox checked={selectMandatory} onChange={(e) => handleSelectMandatory(e.target.checked)} />}
+                      label="Select Mandatory Fields"
+                    />
+                    <FormControlLabel
+                      sx={{ 
+                        bgcolor: 'background.paper',
+                        p: 1,
+                        borderRadius: 1,
+                        '&:hover': { bgcolor: 'action.hover' }
+                      }}
+                      control={<Checkbox checked={selectRecommended} onChange={(e) => handleSelectRecommended(e.target.checked)} />}
+                      label="Select Recommended Fields"
+                    />
+                  </Box>
                   
                   <List>
                     {schema?.docs[0]?.fields
@@ -237,7 +258,17 @@ function FileUpload({ connectionId, onUpload }) {
                                 }}
                               />
                             }
-                            label={`${field.label} ${field.reqd ? '*' : ''}`}
+                            label={
+                              <Typography 
+                                component="span" 
+                                sx={{ 
+                                  color: field.reqd ? 'error.main' : 'text.primary',
+                                  fontWeight: field.reqd ? 500 : 400
+                                }}
+                              >
+                                {field.label} {field.reqd ? '*' : ''}
+                              </Typography>
+                            }
                           />
                         </ListItem>
                     ))}
