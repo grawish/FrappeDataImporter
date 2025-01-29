@@ -48,9 +48,10 @@ function ConnectionForm({ onConnect }) {
     setFormData({
       ...formData,
       url: connection.url,
-      username: connection.username
+      username: connection.username,
+      password: ''
     });
-    setShowLoginForm(false);
+    setShowLoginForm(true);
   };
 
   return (
