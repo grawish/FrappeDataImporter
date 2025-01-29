@@ -13,6 +13,11 @@ def connect_frappe():
             username=data['username']
         )
         conn.set_password(data['password'])
+        db.session.add(conn)
+        db.session.commit()
+        return jsonify({"status": "success", "connection_id": conn.id})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 @api.route('/connections', methods=['GET'])
 def get_connections():
@@ -29,11 +34,5 @@ def get_connections():
                 } for conn in connections
             ]
         })
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
-
-        db.session.add(conn)
-        db.session.commit()
-        return jsonify({"status": "success", "connection_id": conn.id})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
