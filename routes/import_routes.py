@@ -2,7 +2,7 @@
 import os
 import logging
 import pandas as pd
-from ImporterMethods.Customer import validate
+from ImporterMethods.Customer import validate_all
 from flask import request, jsonify
 from werkzeug.utils import secure_filename
 from app import db
@@ -34,7 +34,7 @@ def upload_file():
             os.remove(filepath)
             return jsonify({"status": "error", "message": "Unsupported file format"}), 400
 
-        validate(df.to_dict(orient='records'))
+        validate_all(df.to_dict(orient='records'))
 
         
         file_size = os.path.getsize(filepath)

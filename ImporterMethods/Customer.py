@@ -20,6 +20,9 @@ def get_field_mapping(key):
     else:
         return fieldname, None, None
 
+def validate_all(data_list):
+    for data in data_list:
+        validate(data)
 
 def validate(data):
     for key in data.keys():
