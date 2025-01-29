@@ -70,7 +70,7 @@ def get_template(connection_id):
                             all_fields[qualified_name] = field_type
             elif isinstance(field, dict) and 'fieldname' in field:
                 field_type = field.get('fieldtype', '')
-                if field_type.endswith('Link'):
+                if field_type.endswith('Link') and field_type.endswith('Select'):
                     field_type = f"{field_type} [{field.get('options', '')}]"
                 all_fields[field['fieldname']] = field_type
 
