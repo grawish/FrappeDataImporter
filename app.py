@@ -35,6 +35,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 db.init_app(app)
 
+# Import and register blueprints
 from routes import api
 app.register_blueprint(api, url_prefix='/api')
 
