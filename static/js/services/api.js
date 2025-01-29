@@ -7,6 +7,14 @@ export async function getConnections() {
   return response.json();
 }
 
+export async function deleteConnection(connectionId) {
+  const response = await fetch(`${API_BASE_URL}/connections/${connectionId}`, {
+    method: 'DELETE',
+    credentials: 'include'
+  });
+  return response.json();
+}
+
 export async function connectToFrappe(credentials) {
   const response = await fetch(`${API_BASE_URL}/connect`, {
     method: 'POST',

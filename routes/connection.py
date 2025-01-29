@@ -48,3 +48,13 @@ def get_connections():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+@api.route('/connections/<int:connection_id>', methods=['DELETE'])
+def delete_connection(connection_id):
+    try:
+        connection = FrappeConnection.query.get_or_404(connection_id)
+        db.session.delete(connection)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400

@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { connectToFrappe, getConnections } from '../services/api';
+import { connectToFrappe, getConnections, deleteConnection } from '../services/api';
 import { Card, CardContent, Typography, TextField, Button, List, ListItem, ListItemText, Divider } from '@mui/material';
 
 function ConnectionForm({ onConnect }) {
@@ -17,7 +16,7 @@ function ConnectionForm({ onConnect }) {
     if (connection) {
       onConnect(JSON.parse(connection).connection_id);
     }
-    
+
     // Fetch saved connections
     getConnections()
       .then(response => {
@@ -56,14 +55,34 @@ function ConnectionForm({ onConnect }) {
       <CardContent>
         <Typography variant="h5" gutterBottom>Connect to Frappe Instance</Typography>
         {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
-        
+
         {savedConnections.length > 0 && (
           <>
             <Typography variant="h6" gutterBottom>Saved Connections</Typography>
             <List sx={{ mb: 3 }}>
               {savedConnections.map((conn) => (
                 <React.Fragment key={conn.id}>
-                  <ListItem button onClick={() => handleSelectConnection(conn)}>
+                  <ListItem 
+                    button 
+                    onClick={() => handleSelectConnection(conn)}
+                    secondaryAction={
+                      <Button 
+                        color="error" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this connection?')) {
+                            deleteConnection(conn.id)
+                              .then(() => {
+                                setSavedConnections(savedConnections.filter(c => c.id !== conn.id));
+                              })
+                              .catch(err => setError('Failed to delete connection'));
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    }
+                  >
                     <ListItemText 
                       primary={conn.url}
                       secondary={`Username: ${conn.username} | Created: ${new Date(conn.created_at).toLocaleDateString()}`}
