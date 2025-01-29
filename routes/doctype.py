@@ -1,4 +1,3 @@
-
 import logging
 import requests
 from flask import request, jsonify, send_file
@@ -70,8 +69,11 @@ def get_template(connection_id):
                             all_fields[qualified_name] = field_type
             elif isinstance(field, dict) and 'fieldname' in field:
                 field_type = field.get('fieldtype', '')
-                if field_type.endswith('Link') and field_type.endswith('Select'):
+                if field_type.endswith('Link'):
                     field_type = f"{field_type} [{field.get('options', '')}]"
+                elif field_type == 'Select':
+                    options = field.get('options', '').replace('\n', ', ')
+                    field_type = f"{field_type} [{options}]"
                 all_fields[field['fieldname']] = field_type
 
         ordered_fields = []
