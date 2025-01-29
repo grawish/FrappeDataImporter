@@ -139,7 +139,23 @@ function FileUpload({ connectionId, onUpload }) {
       if (response.status === "success") {
         onUpload(response.job_id);
       } else {
-        setError(response.message || "Failed to upload file");
+        if (response.validation_errors) {
+          const errorList = response.validation_errors.map(error => 
+            `Row ${error.row}: ${error.errors.join(', ')}`
+          ).join('\n');
+          setError(
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" color="error" gutterBottom>
+                Validation Errors:
+              </Typography>
+              <Alert severity="error">
+                <pre style={{ whiteSpace: 'pre-wrap' }}>{errorList}</pre>
+              </Alert>
+            </Box>
+          );
+        } else {
+          setError(response.message || "Failed to upload file");
+        }
       }
     } catch (err) {
       setError("Failed to upload file");

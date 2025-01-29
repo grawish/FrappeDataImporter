@@ -21,22 +21,29 @@ def get_field_mapping(key):
         return fieldname, None, None
 
 def validate_all(data_list):
-    for data in data_list:
-        validate(data)
+    all_errors = []
+    for idx, data in enumerate(data_list):
+        row_errors = validate(data)
+        if row_errors:
+            all_errors.append({
+                'row': idx + 1,
+                'errors': row_errors
+            })
+    return all_errors
 
 def validate(data):
+    errors = []
     for key in data.keys():
         fieldname, fieldtype, options = get_field_mapping(key)
         fieldvalue = data[key]
 
         if fieldtype == 'Select' and options:
             if fieldvalue not in options.split(', '):
-                raise ValueError(
+                errors.append(
                     f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}."
                 )
         elif fieldtype == 'Link' and options:
             connection_id = request.form.get('connection_id')
-            # Get connection details from the database
             conn = FrappeConnection.query.get_or_404(connection_id)
             if not fieldvalue:  # Skip validation for empty values
                 continue

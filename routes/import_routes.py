@@ -1,4 +1,3 @@
-
 import os
 import logging
 import pandas as pd
@@ -13,7 +12,7 @@ UPLOAD_FOLDER = 'uploads'
 
 @api.route('/upload', methods=['POST'])
 def upload_file():
-    
+
     connection_id = request.form.get('connection_id')
     if not connection_id:
         return jsonify({"status": "error", "message": "No connection ID provided"}), 400
@@ -34,9 +33,14 @@ def upload_file():
             os.remove(filepath)
             return jsonify({"status": "error", "message": "Unsupported file format"}), 400
 
-        validate_all(df.to_dict(orient='records'))
+        validation_errors = validate_all(df.to_dict(orient='records'))
+        if validation_errors:
+            os.remove(filepath)
+            return jsonify({
+                "status": "error",
+                "validation_errors": validation_errors
+            }), 400
 
-        
         file_size = os.path.getsize(filepath)
         optimal_batch_size = 500 if file_size >= 20 * 1024 * 1024 else (
             250 if file_size >= 5 * 1024 * 1024 else (
