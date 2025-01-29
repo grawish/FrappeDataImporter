@@ -4,7 +4,7 @@ import ConnectionForm from './components/ConnectionForm';
 import FileUpload from './components/FileUpload';
 import DataMapping from './components/DataMapping';
 import ImportProgress from './components/ImportProgress';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Stepper, Step, StepLabel } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutIcon from '@mui/icons-material/Logout';
 
@@ -46,7 +46,7 @@ function App() {
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={handleBack}
-          sx={{ visibility: step > 1 ? 'visible' : 'hidden' }}
+          sx={{ visibility: step > 1 && step !== 2 ? 'visible' : 'hidden' }}
         >
           Back
         </Button>
@@ -61,6 +61,21 @@ function App() {
       </Box>
 
       <h1 className="text-center mb-4">Frappe Data Importer</h1>
+      
+      <Stepper activeStep={step - 1} sx={{ mb: 4 }}>
+        <Step>
+          <StepLabel>Connect</StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>Upload</StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>Map Fields</StepLabel>
+        </Step>
+        <Step>
+          <StepLabel>Import</StepLabel>
+        </Step>
+      </Stepper>
       
       {step === 1 && (
         <ConnectionForm onConnect={handleConnection} />
