@@ -195,6 +195,8 @@ function FileUpload({ connectionId, onUpload }) {
                     control={<Checkbox checked={selectMandatory} onChange={(e) => handleSelectMandatory(e.target.checked)} />}
                     label="Select Mandatory Fields"
                   />
+
+                  
                   <List>
                     {schema?.docs[0]?.fields
                       .filter(field => !field.hidden && !field.read_only &&
