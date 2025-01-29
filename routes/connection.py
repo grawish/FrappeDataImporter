@@ -8,6 +8,18 @@ from . import api
 def connect_frappe():
     data = request.json
     try:
+        # Check if connection already exists
+        existing_conn = FrappeConnection.query.filter_by(
+            url=data['url'],
+            username=data['username']
+        ).first()
+        
+        if existing_conn:
+            existing_conn.set_password(data['password'])
+            db.session.commit()
+            return jsonify({"status": "success", "connection_id": existing_conn.id})
+            
+        # Create new connection if doesn't exist
         conn = FrappeConnection(
             url=data['url'],
             username=data['username']
