@@ -1,9 +1,77 @@
 
 {
   "recommended_fields": {
-    "Customer": ["customer_name", "customer_group", "territory"],
-    "Sales Order": ["customer", "order_type", "delivery_date"],
-    "Item": ["item_code", "item_name", "item_group", "stock_uom"],
-    "Work Order": ["production_item", "qty", "planned_start_date"]
+    "Customer": [
+      "customer_name",
+      "customer_type",
+      "customer_group",
+      "territory",
+      "tax_id",
+      "default_currency",
+      "default_price_list",
+      "payment_terms"
+    ],
+    "Sales Order": [
+      "customer",
+      "order_type",
+      "delivery_date",
+      "company",
+      "transaction_date",
+      "currency",
+      "selling_price_list",
+      "customer_address",
+      "shipping_address_name"
+    ],
+    "Item": [
+      "item_code",
+      "item_name",
+      "item_group",
+      "stock_uom",
+      "brand",
+      "description",
+      "is_stock_item",
+      "has_batch_no",
+      "has_serial_no",
+      "standard_rate"
+    ],
+    "Work Order": [
+      "production_item",
+      "qty",
+      "planned_start_date",
+      "expected_delivery_date",
+      "bom_no",
+      "source_warehouse",
+      "wip_warehouse",
+      "target_warehouse"
+    ],
+    "Journal Entry": [
+      "posting_date",
+      "company",
+      "voucher_type",
+      "accounts",
+      "user_remark",
+      "mode_of_payment"
+    ],
+    "Purchase Order": [
+      "supplier",
+      "company",
+      "transaction_date",
+      "schedule_date",
+      "currency",
+      "buying_price_list",
+      "supplier_address",
+      "shipping_address"
+    ],
+    "Employee": [
+      "first_name",
+      "last_name",
+      "employee_number",
+      "date_of_birth",
+      "gender",
+      "date_of_joining",
+      "department",
+      "designation",
+      "company_email"
+    ]
   }
 }
