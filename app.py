@@ -1,3 +1,4 @@
+
 import os
 import logging
 from flask import Flask
@@ -15,9 +16,8 @@ db = SQLAlchemy(model_class=Base)
 app = Flask(__name__)
 migrate = Migrate(app, db)
 
-# Configure CORS with specific settings
 CORS(app, resources={
-    r"/*": {  # Allow CORS for all routes
+    r"/*": {
         "origins": ["http://localhost:5000", "https://localhost:5000", "*"],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
@@ -35,7 +35,9 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 db.init_app(app)
 
+from routes import api
+app.register_blueprint(api, url_prefix='/api')
+
 with app.app_context():
     import models
-    import routes
     db.create_all()
