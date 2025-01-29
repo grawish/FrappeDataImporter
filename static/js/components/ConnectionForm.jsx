@@ -60,7 +60,7 @@ function ConnectionForm({ onConnect }) {
         <Typography variant="h5" gutterBottom>Connect to Frappe Instance</Typography>
         {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
 
-        {savedConnections.length > 0 && (
+        {savedConnections.length > 0 && !showLoginForm && (
           <>
             <Typography variant="h6" gutterBottom>Saved Connections</Typography>
             <Box sx={{ flexGrow: 1, mb: 3 }}>
@@ -139,8 +139,17 @@ function ConnectionForm({ onConnect }) {
           </>
         )}
 
-        {showLoginForm && <form onSubmit={handleSubmit}>
-          <TextField
+        {showLoginForm && (
+          <>
+            <Button 
+              startIcon={<ArrowBackIcon />} 
+              onClick={() => setShowLoginForm(false)} 
+              sx={{ mb: 2 }}
+            >
+              Back to Connections
+            </Button>
+            <form onSubmit={handleSubmit}>
+              <TextField
             fullWidth
             label="Frappe URL"
             type="url"
@@ -170,7 +179,9 @@ function ConnectionForm({ onConnect }) {
           <Button type="submit" variant="contained" color="primary">
             Connect
           </Button>
-        </form>}
+            </form>
+          </>
+        )}
       </CardContent>
     </Card>
   );
