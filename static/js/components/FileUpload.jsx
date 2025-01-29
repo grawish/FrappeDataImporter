@@ -22,7 +22,7 @@ function FileUpload({ connectionId, onUpload }) {
   const [schema, setSchema] = useState(null);
   const [selectedFields, setSelectedFields] = useState([]);
   const [openModal, setOpenModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('recommended');
   const [config, setConfig] = useState({}); // Added state for config
 
   useEffect(() => {
@@ -201,9 +201,9 @@ function FileUpload({ connectionId, onUpload }) {
                   <Box sx={{ width: '100%', mb: 2 }}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
                       <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-                        <Tab label="All Fields" value="all" />
-                        <Tab label="Mandatory Fields" value="mandatory" />
                         <Tab label="Recommended Fields" value="recommended" />
+                        <Tab label="Mandatory Fields" value="mandatory" />
+                        <Tab label="All Fields" value="all" />
                       </Tabs>
                     </Box>
                     <List>
