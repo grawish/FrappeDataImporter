@@ -7,6 +7,10 @@
       "customer_group",
       "territory",
       "tax_id",
+      "gstin",
+      "gst_category",
+      "pan",
+      "place_of_supply",
       "default_currency",
       "default_price_list",
       "payment_terms"
@@ -20,7 +24,12 @@
       "currency",
       "selling_price_list",
       "customer_address",
-      "shipping_address_name"
+      "shipping_address_name",
+      "gst_category",
+      "place_of_supply",
+      "company_gstin",
+      "billing_address_gstin",
+      "e_invoice_status"
     ],
     "Item": [
       "item_code",
@@ -60,7 +69,12 @@
       "currency",
       "buying_price_list",
       "supplier_address",
-      "shipping_address"
+      "shipping_address",
+      "supplier_gstin",
+      "company_gstin",
+      "place_of_supply",
+      "gst_category",
+      "is_reverse_charge"
     ],
     "Employee": [
       "first_name",
