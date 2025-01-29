@@ -75,9 +75,9 @@ def get_template(connection_id):
                 all_fields[field['fieldname']] = field_type
 
         ordered_fields = []
-        for field_name in selected_fields:
-            if field_name in all_fields:
-                ordered_fields.append((field_name, all_fields[field_name]))
+        for field_name, field_type in all_fields.items():
+            if field_name in selected_fields:
+                ordered_fields.append((field_name, field_type))
 
         columns = []
         for field_name, field_type in ordered_fields:
