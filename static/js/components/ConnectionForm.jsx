@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connectToFrappe, getConnections, deleteConnection } from '../services/api';
-import { Card, CardContent, Typography, TextField, Button, List, ListItem, ListItemText, Divider, IconButton } from '@mui/material';
+import { Card, CardContent, CardActions, Typography, TextField, Button, Grid, Box, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 function ConnectionForm({ onConnect }) {
@@ -60,39 +60,48 @@ function ConnectionForm({ onConnect }) {
         {savedConnections.length > 0 && (
           <>
             <Typography variant="h6" gutterBottom>Saved Connections</Typography>
-            <List sx={{ mb: 3 }}>
-              {savedConnections.map((conn) => (
-                <React.Fragment key={conn.id}>
-                  <ListItem 
-                    button 
-                    onClick={() => handleSelectConnection(conn)}
-                    secondaryAction={
-                      <IconButton
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (window.confirm('Are you sure you want to delete this connection?')) {
-                            deleteConnection(conn.id)
-                              .then(() => {
-                                setSavedConnections(savedConnections.filter(c => c.id !== conn.id));
-                              })
-                              .catch(err => setError('Failed to delete connection'));
-                          }
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemText 
-                      primary={conn.url}
-                      secondary={`Username: ${conn.username} | Created: ${new Date(conn.created_at).toLocaleDateString()}`}
-                    />
-                  </ListItem>
-                  <Divider />
-                </React.Fragment>
-              ))}
-            </List>
+            <Box sx={{ flexGrow: 1, mb: 3 }}>
+              <Grid container spacing={2}>
+                {savedConnections.map((conn) => (
+                  <Grid item xs={12} sm={6} md={4} key={conn.id}>
+                    <Card 
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': { boxShadow: 6 }
+                      }}
+                      onClick={() => handleSelectConnection(conn)}
+                    >
+                      <CardContent>
+                        <Typography variant="h6" noWrap>{conn.url}</Typography>
+                        <Typography color="textSecondary" gutterBottom>
+                          Username: {conn.username}
+                        </Typography>
+                        <Typography variant="caption" display="block">
+                          Created: {new Date(conn.created_at).toLocaleDateString()}
+                        </Typography>
+                      </CardContent>
+                      <CardActions sx={{ justifyContent: 'flex-end' }}>
+                        <IconButton
+                          color="error"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('Are you sure you want to delete this connection?')) {
+                              deleteConnection(conn.id)
+                                .then(() => {
+                                  setSavedConnections(savedConnections.filter(c => c.id !== conn.id));
+                                })
+                                .catch(err => setError('Failed to delete connection'));
+                            }
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
           </>
         )}
 
