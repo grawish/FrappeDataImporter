@@ -11,6 +11,7 @@ function ConnectionForm({ onConnect }) {
   });
   const [error, setError] = useState('');
   const [savedConnections, setSavedConnections] = useState([]);
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
   useEffect(() => {
     const connection = localStorage.getItem('connection');
@@ -49,6 +50,7 @@ function ConnectionForm({ onConnect }) {
       url: connection.url,
       username: connection.username
     });
+    setShowLoginForm(false);
   };
 
   return (
@@ -80,10 +82,7 @@ function ConnectionForm({ onConnect }) {
                         username: '',
                         password: ''
                       });
-                      window.scrollTo({
-                        top: document.body.scrollHeight,
-                        behavior: 'smooth'
-                      });
+                      setShowLoginForm(true);
                     }}
                   >
                     <CardContent sx={{ textAlign: 'center' }}>
@@ -139,7 +138,7 @@ function ConnectionForm({ onConnect }) {
           </>
         )}
 
-        <form onSubmit={handleSubmit}>
+        {showLoginForm && <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
             label="Frappe URL"
@@ -170,7 +169,7 @@ function ConnectionForm({ onConnect }) {
           <Button type="submit" variant="contained" color="primary">
             Connect
           </Button>
-        </form>
+        </form>}
       </CardContent>
     </Card>
   );
