@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connectToFrappe, getConnections, deleteConnection } from '../services/api';
-import { Card, CardContent, CardActions, Typography, TextField, Button, Grid, Box, IconButton } from '@mui/material';
+import { Card, CardContent, CardActions, Typography, TextField, Button, Grid, Box, IconButton, Fade, Slide } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -62,9 +62,10 @@ function ConnectionForm({ onConnect }) {
         {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
 
         {savedConnections.length > 0 && !showLoginForm && (
-          <>
-            <Typography variant="h6" gutterBottom>Saved Connections</Typography>
-            <Box sx={{ flexGrow: 1, mb: 3 }}>
+          <Fade in={!showLoginForm} timeout={800}>
+            <div>
+              <Typography variant="h6" gutterBottom>Saved Connections</Typography>
+              <Box sx={{ flexGrow: 1, mb: 3 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={4}>
                   <Card 
@@ -137,10 +138,12 @@ function ConnectionForm({ onConnect }) {
                 ))}
               </Grid>
             </Box>
-          </>
+          </div>
+          </Fade>
         )}
 
         {showLoginForm && (
+          <Slide direction="left" in={showLoginForm} mountOnEnter unmountOnExit timeout={400}>
           <>
             <Button 
               startIcon={<ArrowBackIcon />} 
@@ -181,7 +184,7 @@ function ConnectionForm({ onConnect }) {
             Connect
           </Button>
             </form>
-          </>
+          </Slide>
         )}
       </CardContent>
     </Card>
