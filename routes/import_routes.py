@@ -1,3 +1,4 @@
+import json
 import os
 import pandas as pd
 from ImporterMethods.Customer import validate_all
@@ -20,6 +21,7 @@ def upload_file():
     if 'file' not in request.files:
         return jsonify({"status": "error", "message": "No file provided"}), 400
 
+    conn = FrappeConnection.query.get_or_404(connection_id)
     file = request.files['file']
     filename = secure_filename(file.filename)
     filepath = os.path.join(UPLOAD_FOLDER, filename)
@@ -47,7 +49,7 @@ def upload_file():
         )
 
         job = ImportJob(
-            frappe_url=request.form.get('frappe_url'),
+            frappe_url=conn.url,
             doctype=request.form.get('doctype'),
             total_rows=len(df),
             file_path=filepath,
@@ -129,6 +131,9 @@ def import_data(job_id, conn_id):
                     raise Exception("Connection not found for the given Frappe URL")
 
                 docs = [{"doctype": job.doctype, **record} for record in mapped_data]
+
+                print(json.dumps(docs))
+
                 response = requests.post(
                     f"{conn.url}/api/method/frappe.client.insert_many",
                     json={"docs": docs},
@@ -137,6 +142,7 @@ def import_data(job_id, conn_id):
                         'Content-Type': 'application/json'
                     }
                 )
+                print("insert response ->>>> ",response.json())
                 if not response.ok:
                     raise Exception(f"Failed to create records: {response.text}")
             except Exception as e:
