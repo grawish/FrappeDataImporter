@@ -61,23 +61,11 @@ def validate_and_create(data):
                 if response.ok:
                     if not response.json().get('message', {}).get("name"):
                         # errors+=(f"Invalid value '{fieldvalue}' for field '{fieldname}'.<br>")
-                        doc_data = {
-                            "doctype": options,
-                            "name": fieldvalue,
-                            "owner": "Administrator"
-                        }
-                        creation_request = requests.post(
-                            f"{conn.url}/api/method/frappe.client.insert",
-                            json={"doc": json.dumps(doc_data)},
-                            headers={
-                                'Authorization': f'token {conn.api_key}:{conn.api_secret}',
-                                'Content-Type': 'application/json'
-                            }
-                        )
-                        print(creation_request.json())
-                        if not creation_request.ok:
-                            errors+=(f"Error creating link '{fieldvalue}' for field '{fieldname}'.<br>")
-                            
+                        from ImporterMethods.customer_group import create_frappe_record    
+                        try:
+                            create_frappe_record(fieldvalue)
+                        except Exception as e:
+                            errors+=(f"Error creating Customer Group: {str(e)}<br>")
                         
 
             except Exception as e:
