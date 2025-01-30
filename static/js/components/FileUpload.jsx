@@ -13,6 +13,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 function FileUpload({ connectionId, onUpload }) {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
+  const [createMissingRecords, setCreateMissingRecords] = useState(false);
   const [error, setError] = useState("");
   const [batchSize, setBatchSize] = useState(100);
   const [doctypes, setDoctypes] = useState([]);
@@ -134,6 +135,7 @@ function FileUpload({ connectionId, onUpload }) {
       formData.append("batch_size", batchSize.toString());
       formData.append("frappe_url", "");
       formData.append("doctype", selectedDoctype);
+      formData.append("create_missing_records", createMissingRecords.toString());
 
       const response = await uploadFile(formData);
       if (response.status === "success") {
@@ -392,6 +394,15 @@ function FileUpload({ connectionId, onUpload }) {
         {file && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="body2" gutterBottom>Selected file: {file.name}</Typography>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={(e) => setCreateMissingRecords(e.target.checked)}
+                />
+              }
+              label="Create missing records automatically"
+              sx={{ display: 'block', mb: 1 }}
+            />
             <Button
               variant="contained"
               onClick={handleUpload}
