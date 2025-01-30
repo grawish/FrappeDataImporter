@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import ConnectionForm from './components/ConnectionForm';
 import FileUpload from './components/FileUpload';
 import DataMapping from './components/DataMapping';
 import ImportProgress from './components/ImportProgress';
-import { Box, Button, Stepper, Step, StepLabel } from '@mui/material';
+import { Box, Button, Stepper, Step, StepLabel, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LogoutIcon from '@mui/icons-material/Logout';
 
@@ -13,6 +12,7 @@ function App() {
   const [connectionId, setConnectionId] = useState(null);
   const [jobId, setJobId] = useState(null);
   const [schema, setSchema] = useState(null);
+  const [error, setError] = useState(null); // Added error state
 
   const handleConnection = (connId) => {
     setConnectionId(connId);
@@ -38,7 +38,12 @@ function App() {
     setJobId(null);
     setSchema(null);
     setStep(1);
+    setError(null); //Clear error on logout
   };
+
+  const handleError = (err) => {
+    setError(err.message); //Update error state
+  }
 
   return (
     <div className="container mt-5">
@@ -61,7 +66,7 @@ function App() {
       </Box>
 
       <h1 className="text-center mb-4">Frappe Data Importer</h1>
-      
+
       <Stepper activeStep={step - 1} sx={{ mb: 4 }}>
         <Step>
           <StepLabel>Connect</StepLabel>
@@ -76,28 +81,36 @@ function App() {
           <StepLabel>Import</StepLabel>
         </Step>
       </Stepper>
-      
-      {step === 1 && (
-        <ConnectionForm onConnect={handleConnection} />
+
+      {error && ( //Added error handling
+        <Alert severity="error" sx={{ mb: 2 }}>
+          <div dangerouslySetInnerHTML={{ __html: error }} />
+        </Alert>
       )}
-      
+
+      {step === 1 && (
+        <ConnectionForm onConnect={handleConnection} onError={handleError}/>
+      )}
+
       {step === 2 && (
-        <FileUpload 
+        <FileUpload
           connectionId={connectionId}
           onUpload={handleFileUpload}
+          onError={handleError}
         />
       )}
-      
+
       {step === 3 && (
         <DataMapping
           jobId={jobId}
           schema={schema}
           onMapping={handleMapping}
+          onError={handleError}
         />
       )}
-      
+
       {step === 4 && (
-        <ImportProgress jobId={jobId} />
+        <ImportProgress jobId={jobId} onError={handleError}/>
       )}
     </div>
   );
