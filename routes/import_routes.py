@@ -119,21 +119,21 @@ def import_data(job_id):
                 if record:
                     mapped_data.append(record)
 
-            # Create records in Frappe
-            for record in mapped_data:
-                try:
-                    response = requests.post(
-                        f"{job.frappe_url}/api/method/frappe.client.insert",
-                        json={"doc": {**record, "doctype": job.doctype}},
-                        headers={
-                            'Authorization': f'token {conn.api_key}:{conn.api_secret}',
-                            'Content-Type': 'application/json'
-                        }
-                    )
-                    if not response.ok:
-                        raise Exception(f"Failed to create record: {response.text}")
-                except Exception as e:
-                    raise Exception(f"Error creating record: {str(e)}")
+            # Create records in Frappe using insert_many
+            try:
+                docs = [{"doctype": job.doctype, **record} for record in mapped_data]
+                response = requests.post(
+                    f"{job.frappe_url}/api/method/frappe.client.insert_many",
+                    json={"docs": docs},
+                    headers={
+                        'Authorization': f'token {conn.api_key}:{conn.api_secret}',
+                        'Content-Type': 'application/json'
+                    }
+                )
+                if not response.ok:
+                    raise Exception(f"Failed to create records: {response.text}")
+            except Exception as e:
+                raise Exception(f"Error creating records: {str(e)}")
 
             job.processed_rows = end_idx
             job.current_batch = batch_num + 1
