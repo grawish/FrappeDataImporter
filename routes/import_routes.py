@@ -9,6 +9,7 @@ from models import ImportJob
 from . import api
 import requests
 from models import FrappeConnection
+from ImporterMethods.Customer import get_field_mapping
 
 UPLOAD_FOLDER = 'uploads'
 
