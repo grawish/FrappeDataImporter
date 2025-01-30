@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from app import db
 from models import ImportJob
 from . import api
+import requests
 
 UPLOAD_FOLDER = 'uploads'
 
