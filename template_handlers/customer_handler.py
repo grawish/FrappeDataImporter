@@ -2,7 +2,12 @@
 from . import TemplateHandler
 
 class CustomerTemplateHandler(TemplateHandler):
-    def get_fields(self):
+    def get_fields(self, selected_fields=None):
+        # Use selected fields from frontend if provided
+        if selected_fields:
+            return selected_fields
+            
+        # Fallback to default fields if none provided
         return [
             "customer_name [Data]",
             "customer_type [Select] [Company, Individual]",
@@ -21,5 +26,4 @@ class CustomerTemplateHandler(TemplateHandler):
 
     def process_template(self, df):
         # Add any customer-specific processing here
-        
         return df

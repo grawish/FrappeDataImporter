@@ -102,12 +102,14 @@ def get_template(connection_id):
                 else:
                     columns.append(f"{field_name} [{field_type}]")
 
-        df = pd.DataFrame(columns=columns)
-        
-        # Process with handler if available
+        # Get processed fields from handler if available
         handler = get_template_handler(doctype)
         if handler:
+            processed_fields = handler.get_fields(columns)
+            df = pd.DataFrame(columns=processed_fields)
             df = handler.process_template(df)
+        else:
+            df = pd.DataFrame(columns=columns)
             
         excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
         writer = pd.ExcelWriter(excel_file, engine='openpyxl')
