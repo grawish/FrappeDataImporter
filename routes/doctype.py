@@ -3,6 +3,8 @@ import requests
 from flask import request, jsonify, send_file
 import pandas as pd
 import os
+
+from sqlalchemy import column
 from app import db
 from models import FrappeConnection
 from . import api
@@ -91,7 +93,9 @@ def get_template(connection_id):
             if field_name in selected_fields:
                 ordered_fields.append((field_name, field_type))
 
+
         columns = []
+        
         for field_name, field_type in ordered_fields:
             if isinstance(field_type, str):
                 if field_type.endswith('Link'):
@@ -102,12 +106,12 @@ def get_template(connection_id):
                 else:
                     columns.append(f"{field_name} [{field_type}]")
 
+
         # Get processed fields from handler if available
         handler = get_template_handler(doctype)
         if handler:
             processed_fields = handler.get_fields(columns)
             df = pd.DataFrame(columns=processed_fields)
-            df = handler.process_template(df)
         else:
             df = pd.DataFrame(columns=columns)
             
