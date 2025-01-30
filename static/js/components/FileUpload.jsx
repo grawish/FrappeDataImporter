@@ -24,71 +24,17 @@ function FileUpload({ connectionId, onUpload }) {
   const [selectedFields, setSelectedFields] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [activeTab, setActiveTab] = useState('recommended');
-  const [config, setConfig] = useState({}); // Added state for config
+  const [config, setConfig] = useState({});
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectMandatory, setSelectMandatory] = useState(false);
+  const [selectRecommended, setSelectRecommended] = useState(false);
 
   useEffect(() => {
-    // Fetch config.json
     fetch('/static/js/config.json')
       .then(response => response.json())
       .then(data => setConfig(data))
       .catch(error => console.error('Error loading config.json:', error));
   }, []);
-
-  const handleSelectAll = (checked) => {
-    setSelectAll(checked);
-    if (checked) {
-      // Get main fields
-      const mainFields = schema.docs[0].fields
-        .filter(field => !field.hidden && !field.read_only && 
-          !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
-        .map(field => field.fieldname);
-
-      // Get child table fields
-      const childFields = schema.docs[0].fields
-        .filter(field => field.fieldtype === 'Table')
-        .flatMap(tableField => {
-          const childDoc = schema.docs.find(d => d.name === tableField.options);
-          return childDoc ? childDoc.fields
-            .filter(field => !field.hidden && !field.read_only &&
-              !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
-            .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
-        });
-
-      setSelectedFields([...mainFields, ...childFields]);
-      setSelectMandatory(false);
-      setSelectRecommended(false);
-    } else {
-      setSelectedFields([]);
-    }
-  };
-
-  const handleSelectMandatory = (checked) => {
-    setSelectMandatory(checked);
-    const mandatoryFields = schema.docs[0].fields
-      .filter(field => !field.hidden && !field.read_only && field.reqd &&
-        !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
-      .map(field => field.fieldname);
-
-    if (checked) {
-      setSelectedFields(mandatoryFields);
-      setSelectAll(false);
-      setSelectRecommended(false);
-    } else {
-      setSelectedFields(selectedFields.filter(field => !mandatoryFields.includes(field)));
-    }
-  };
-
-  const handleSelectRecommended = (checked) => {
-    setSelectRecommended(checked);
-    if (checked && selectedDoctype && config.recommended_fields) {
-      const recommendedFields = config.recommended_fields[selectedDoctype] || [];
-      setSelectedFields(recommendedFields);
-      setSelectAll(false);
-      setSelectMandatory(false);
-    } else {
-      setSelectedFields([]);
-    }
-  };
 
   useEffect(() => {
     if (selectedDoctype) {
@@ -139,7 +85,6 @@ function FileUpload({ connectionId, onUpload }) {
 
       const response = await uploadFile(formData);
       if (response.status === "success") {
-        // Start import immediately after upload
         const importResponse = await fetch(`/api/import/${response.job_id}`, {
           method: 'POST',
           headers: {
@@ -174,13 +119,62 @@ function FileUpload({ connectionId, onUpload }) {
     } finally {
       setLoading(false);
     }
-    } catch (err) {
-      setError("Failed to upload file");
-      console.error("Upload error:", err);
-    } finally {
-      setLoading(false);
+  };
+
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      const mainFields = schema.docs[0].fields
+        .filter(field => !field.hidden && !field.read_only && 
+          !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
+        .map(field => field.fieldname);
+
+      const childFields = schema.docs[0].fields
+        .filter(field => field.fieldtype === 'Table')
+        .flatMap(tableField => {
+          const childDoc = schema.docs.find(d => d.name === tableField.options);
+          return childDoc ? childDoc.fields
+            .filter(field => !field.hidden && !field.read_only &&
+              !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
+            .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
+        });
+
+      setSelectedFields([...mainFields, ...childFields]);
+      setSelectMandatory(false);
+      setSelectRecommended(false);
+    } else {
+      setSelectedFields([]);
     }
   };
+
+  const handleSelectMandatory = (checked) => {
+    setSelectMandatory(checked);
+    const mandatoryFields = schema.docs[0].fields
+      .filter(field => !field.hidden && !field.read_only && field.reqd &&
+        !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
+      .map(field => field.fieldname);
+
+    if (checked) {
+      setSelectedFields(mandatoryFields);
+      setSelectAll(false);
+      setSelectRecommended(false);
+    } else {
+      setSelectedFields(selectedFields.filter(field => !mandatoryFields.includes(field)));
+    }
+  };
+
+  const handleSelectRecommended = (checked) => {
+    setSelectRecommended(checked);
+    if (checked && selectedDoctype && config.recommended_fields) {
+      const recommendedFields = config.recommended_fields[selectedDoctype] || [];
+      setSelectedFields(recommendedFields);
+      setSelectAll(false);
+      setSelectMandatory(false);
+    } else {
+      setSelectedFields([]);
+    }
+  };
+
 
   return (
     <Card>
@@ -247,93 +241,73 @@ function FileUpload({ connectionId, onUpload }) {
                               schema?.docs[0]?.fields.filter(field => {
                                 const baseFilter = !field.hidden && !field.read_only &&
                                   !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype);
-                                
+
                                 switch(activeTab) {
                                   case 'mandatory':
                                     return baseFilter && field.reqd;
                                   case 'recommended':
                                     return baseFilter && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
-                                  default: // 'all'
+                                  default:
                                     return baseFilter;
                                 }
                               }).every(field => selectedFields.includes(field.fieldname))
                             }
-                            onChange={(e) => {
-                              const filteredFields = schema?.docs[0]?.fields.filter(field => {
-                                const baseFilter = !field.hidden && !field.read_only &&
-                                  !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype);
-                                
-                                switch(activeTab) {
-                                  case 'mandatory':
-                                    return baseFilter && field.reqd;
-                                  case 'recommended':
-                                    return baseFilter && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
-                                  default: // 'all'
-                                    return baseFilter;
-                                }
-                              }).map(field => field.fieldname);
-
-                              if (e.target.checked) {
-                                setSelectedFields([...new Set([...selectedFields, ...filteredFields])]);
-                              } else {
-                                setSelectedFields(selectedFields.filter(field => !filteredFields.includes(field)));
-                              }
-                            }}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
                           />
                         }
                         label="Select All"
                       />
                     </Box>
                     <List>
-                    {schema?.docs[0]?.fields
-                      .filter(field => {
-                        const baseFilter = !field.hidden && !field.read_only &&
-                          !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype);
-                        
-                        switch(activeTab) {
-                          case 'mandatory':
-                            return baseFilter && field.reqd;
-                          case 'recommended':
-                            return baseFilter && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
-                          default: // 'all'
-                            return baseFilter;
-                        }
-                      })
-                      .map(field => (
-                        <ListItem key={field.fieldname}>
-                          <FormControlLabel
-                            sx={{
-                              bgcolor: 'background.paper',
-                              p: 1,
-                              borderRadius: 1,
-                              '&:hover': { bgcolor: 'action.hover' }
-                            }}
-                            control={
-                              <Checkbox
-                                checked={selectedFields.includes(field.fieldname)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedFields([...selectedFields, field.fieldname]);
-                                  } else {
-                                    setSelectedFields(selectedFields.filter(f => f !== field.fieldname));
-                                  }
-                                }}
-                              />
-                            }
-                            label={
-                              <Typography 
-                                component="span" 
-                                sx={{ 
-                                  color: field.reqd ? 'error.main' : 'text.primary',
-                                  fontWeight: field.reqd ? 500 : 400
-                                }}
-                              >
-                                {field.label} {field.reqd ? '*' : ''}
-                              </Typography>
-                            }
-                          />
-                        </ListItem>
-                    ))}
+                      {schema?.docs[0]?.fields
+                        .filter(field => {
+                          const baseFilter = !field.hidden && !field.read_only &&
+                            !['Section Break', 'Column Break', 'Tab Break', 'Read Only'].includes(field.fieldtype);
+
+                          switch(activeTab) {
+                            case 'mandatory':
+                              return baseFilter && field.reqd;
+                            case 'recommended':
+                              return baseFilter && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
+                            default:
+                              return baseFilter;
+                          }
+                        })
+                        .map(field => (
+                          <ListItem key={field.fieldname}>
+                            <FormControlLabel
+                              sx={{
+                                bgcolor: 'background.paper',
+                                p: 1,
+                                borderRadius: 1,
+                                '&:hover': { bgcolor: 'action.hover' }
+                              }}
+                              control={
+                                <Checkbox
+                                  checked={selectedFields.includes(field.fieldname)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedFields([...selectedFields, field.fieldname]);
+                                    } else {
+                                      setSelectedFields(selectedFields.filter(f => f !== field.fieldname));
+                                    }
+                                  }}
+                                />
+                              }
+                              label={
+                                <Typography 
+                                  component="span" 
+                                  sx={{ 
+                                    color: field.reqd ? 'error.main' : 'text.primary',
+                                    fontWeight: field.reqd ? 500 : 400
+                                  }}
+                                >
+                                  {field.label} {field.reqd ? '*' : ''}
+                                </Typography>
+                              }
+                            />
+                          </ListItem>
+                        ))}
                     </List>
                   </Box>
                 </Box>
