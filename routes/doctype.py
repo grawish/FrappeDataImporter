@@ -114,7 +114,7 @@ def get_doctypes(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
     try:
         response = requests.get(
-            f"{conn.url}/api/resource/DocType?limit_page_length=10000",
+            f"{conn.url}/api/resource/DocType?limit_page_length=10000&order_by=name asc",
             headers={
                 'Authorization': f'token {conn.api_key}:{conn.api_secret}'
             } if conn.api_key and conn.api_secret else None,

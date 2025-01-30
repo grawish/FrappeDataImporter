@@ -49,21 +49,30 @@ def validate(data):
                 continue
 
             try:
+                print("params",{
+                         "doctype": options,
+                         "docname": fieldvalue,
+                     })
                 response = requests.get(
-                    f"{conn.url}/api/method/frappe.client.validate_link",
-                    params={
-                        "doctype": options,
-                        "docname": fieldvalue,
-                        "fields": ["name"]
-                    },
+                    f"{conn.url}/api/method/frappe.client.validate_link?doctype={options}&docname={fieldvalue}&fields=[\"name\"]",
                     headers={
                         'Authorization':
                         f'token {conn.api_key}:{conn.api_secret}'
                     } if conn.api_key and conn.api_secret else None)
 
-                if not response.ok:
-                    errors.append(
-                        f"Invalid value '{fieldvalue}' for field '{fieldname}'. Document not found in {options}."
+                if response.ok:
+                    if not response.json().get('name'):
+                        errors.append(
+                        {
+                            "error": "Not Found",
+                            "row": idx + 1,
+                            "field": fieldname,
+                            "value": fieldvalue,
+                            "options": options,
+                            "type": "Link",
+                            "message": f"Link '{fieldvalue}' not found in doctype '{options}'."
+                        }
+    
                     )
 
             except Exception as e:
