@@ -59,6 +59,7 @@ def get_template(connection_id):
         df = handler.process_template(df)
     else:
         # Use default template generation for other doctypes
+        pass
 
     try:
         response = requests.get(
