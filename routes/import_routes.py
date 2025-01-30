@@ -96,9 +96,11 @@ def import_data(job_id, conn_id):
                 record = {}
                 child_tables = {}
 
-                for excel_col, frappe_field in mapping.items():
-                    if '.' in excel_col:
-                        parts = excel_col.split('.')
+                for excel_col in row.index:
+                    fieldname, fieldtype, options = get_field_mapping(excel_col)
+                    
+                    if '.' in fieldname:
+                        parts = fieldname.split('.')
                         if len(parts) == 3:
                             table_name, row_num, field_name = parts
                             row_num = int(row_num)
@@ -113,7 +115,7 @@ def import_data(job_id, conn_id):
                                 child_tables[table_name][row_num][field_name] = row[excel_col]
                     else:
                         if pd.notna(row[excel_col]):
-                            record[frappe_field] = row[excel_col]
+                            record[fieldname] = row[excel_col]
 
                 for table_name, rows in child_tables.items():
                     valid_rows = [data for row_num, data in sorted(rows.items()) if data]
