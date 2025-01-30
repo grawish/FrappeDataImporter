@@ -126,37 +126,27 @@ function FileUpload({ connectionId, onUpload }) {
     const baseFilter = field => !field.hidden && !field.read_only &&
       !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype);
 
-    let fieldsToSelect = [];
-    
-    switch(activeTab) {
-      case 'mandatory':
-        fieldsToSelect = schema.docs[0].fields
-          .filter(field => baseFilter(field) && field.reqd)
-          .map(field => field.fieldname);
-        break;
-      case 'recommended':
-        fieldsToSelect = config.recommended_fields?.[selectedDoctype] || [];
-        break;
-      default:
-        const mainFields = schema.docs[0].fields
-          .filter(baseFilter)
-          .map(field => field.fieldname);
-        const childFields = schema.docs[0].fields
-          .filter(field => field.fieldtype === 'Table')
-          .flatMap(tableField => {
-            const childDoc = schema.docs.find(d => d.name === tableField.options);
-            return childDoc ? childDoc.fields
-              .filter(baseFilter)
-              .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
-          });
-        fieldsToSelect = [...mainFields, ...childFields];
-    }
+    // Get only visible fields based on current tab
+    const visibleFields = schema?.docs[0]?.fields
+      .filter(field => {
+        const baseCondition = baseFilter(field);
+        
+        switch(activeTab) {
+          case 'mandatory':
+            return baseCondition && field.reqd;
+          case 'recommended':
+            return baseCondition && config.recommended_fields?.[selectedDoctype]?.includes(field.fieldname);
+          default:
+            return baseCondition;
+        }
+      })
+      .map(field => field.fieldname);
 
     if (checked) {
-      setSelectedFields(fieldsToSelect);
+      setSelectedFields(visibleFields || []);
     } else {
-      const currentFields = new Set(fieldsToSelect);
-      setSelectedFields(selectedFields.filter(field => !currentFields.has(field)));
+      const currentFields = new Set(visibleFields);
+      setSelectedFields(selectedFields.filter(f => !currentFields.has(f)));
     }
   };
 
