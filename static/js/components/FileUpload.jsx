@@ -123,27 +123,40 @@ function FileUpload({ connectionId, onUpload }) {
 
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
+    const baseFilter = field => !field.hidden && !field.read_only &&
+      !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype);
+
+    let fieldsToSelect = [];
+    
+    switch(activeTab) {
+      case 'mandatory':
+        fieldsToSelect = schema.docs[0].fields
+          .filter(field => baseFilter(field) && field.reqd)
+          .map(field => field.fieldname);
+        break;
+      case 'recommended':
+        fieldsToSelect = config.recommended_fields?.[selectedDoctype] || [];
+        break;
+      default:
+        const mainFields = schema.docs[0].fields
+          .filter(baseFilter)
+          .map(field => field.fieldname);
+        const childFields = schema.docs[0].fields
+          .filter(field => field.fieldtype === 'Table')
+          .flatMap(tableField => {
+            const childDoc = schema.docs.find(d => d.name === tableField.options);
+            return childDoc ? childDoc.fields
+              .filter(baseFilter)
+              .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
+          });
+        fieldsToSelect = [...mainFields, ...childFields];
+    }
+
     if (checked) {
-      const mainFields = schema.docs[0].fields
-        .filter(field => !field.hidden && !field.read_only && 
-          !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
-        .map(field => field.fieldname);
-
-      const childFields = schema.docs[0].fields
-        .filter(field => field.fieldtype === 'Table')
-        .flatMap(tableField => {
-          const childDoc = schema.docs.find(d => d.name === tableField.options);
-          return childDoc ? childDoc.fields
-            .filter(field => !field.hidden && !field.read_only &&
-              !['Section Break', 'Column Break', 'Tab Break', 'Table', 'Read Only'].includes(field.fieldtype))
-            .map(field => `${tableField.fieldname}.${field.fieldname}`) : [];
-        });
-
-      setSelectedFields([...mainFields, ...childFields]);
-      setSelectMandatory(false);
-      setSelectRecommended(false);
+      setSelectedFields(fieldsToSelect);
     } else {
-      setSelectedFields([]);
+      const currentFields = new Set(fieldsToSelect);
+      setSelectedFields(selectedFields.filter(field => !currentFields.has(field)));
     }
   };
 
