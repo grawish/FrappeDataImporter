@@ -139,6 +139,16 @@ function FileUpload({ connectionId, onUpload }) {
 
       const response = await uploadFile(formData);
       if (response.status === "success") {
+        // Start import immediately after upload
+        const importResponse = await fetch(`/api/import/${response.job_id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ auto_map: true })
+        });
+        const importData = await importResponse.json();
+        if (importData.status === "success") {
         onUpload(response.job_id);
       } else {
         if (response.validation_errors) {

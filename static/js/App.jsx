@@ -75,9 +75,6 @@ function App() {
           <StepLabel>Upload</StepLabel>
         </Step>
         <Step>
-          <StepLabel>Map Fields</StepLabel>
-        </Step>
-        <Step>
           <StepLabel>Import</StepLabel>
         </Step>
       </Stepper>
@@ -101,15 +98,6 @@ function App() {
       )}
 
       {step === 3 && (
-        <DataMapping
-          jobId={jobId}
-          schema={schema}
-          onMapping={handleMapping}
-          onError={handleError}
-        />
-      )}
-
-      {step === 4 && (
         <ImportProgress jobId={jobId} onError={handleError}/>
       )}
     </div>
