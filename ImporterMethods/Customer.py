@@ -60,12 +60,15 @@ def validate_and_create(data):
 
                 if response.ok:
                     if not response.json().get('message', {}).get("name"):
-                        # errors+=(f"Invalid value '{fieldvalue}' for field '{fieldname}'.<br>")
-                        from ImporterMethods.customer_group import create_frappe_record    
-                        try:
-                            create_frappe_record(fieldvalue)
-                        except Exception as e:
-                            errors+=(f"Error creating Customer Group: {str(e)}<br>")
+                        create_missing = request.form.get('create_missing_records', '').lower() == 'true'
+                        if create_missing:
+                            from ImporterMethods.customer_group import create_frappe_record    
+                            try:
+                                create_frappe_record(fieldvalue)
+                            except Exception as e:
+                                errors+=(f"Error creating Customer Group: {str(e)}<br>")
+                        else:
+                            errors+=(f"Invalid value '{fieldvalue}' for field '{fieldname}'.<br>")
                         
 
             except Exception as e:
