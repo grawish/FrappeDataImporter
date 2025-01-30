@@ -52,15 +52,6 @@ def get_template(connection_id):
         return jsonify({"status": "error", "message": "Doctype is required"}), 400
         
     handler = get_template_handler(doctype)
-    if handler:
-        # Use custom handler for specific doctypes
-        fields = handler.get_fields()
-        df = pd.DataFrame(columns=fields)
-        df = handler.process_template(df)
-    else:
-        # Use default template generation for other doctypes
-        pass
-
     try:
         response = requests.get(
             f"{conn.url}/api/method/frappe.desk.form.load.getdoctype",
@@ -112,6 +103,12 @@ def get_template(connection_id):
                     columns.append(f"{field_name} [{field_type}]")
 
         df = pd.DataFrame(columns=columns)
+        
+        # Process with handler if available
+        handler = get_template_handler(doctype)
+        if handler:
+            df = handler.process_template(df)
+            
         excel_file = os.path.join(UPLOAD_FOLDER, f'{doctype}_template.xlsx')
         writer = pd.ExcelWriter(excel_file, engine='openpyxl')
         df.to_excel(writer, index=False, sheet_name='Template')
