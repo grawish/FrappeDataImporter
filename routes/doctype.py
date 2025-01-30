@@ -32,6 +32,15 @@ def get_schema(connection_id):
         logging.error(f"Error getting schema: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 400
 
+from template_handlers.customer_handler import CustomerTemplateHandler
+
+def get_template_handler(doctype):
+    handlers = {
+        'Customer': CustomerTemplateHandler(),
+        # Add more handlers here
+    }
+    return handlers.get(doctype)
+
 @api.route('/template/<connection_id>', methods=['POST'])
 def get_template(connection_id):
     conn = FrappeConnection.query.get_or_404(connection_id)
@@ -41,6 +50,15 @@ def get_template(connection_id):
 
     if not doctype:
         return jsonify({"status": "error", "message": "Doctype is required"}), 400
+        
+    handler = get_template_handler(doctype)
+    if handler:
+        # Use custom handler for specific doctypes
+        fields = handler.get_fields()
+        df = pd.DataFrame(columns=fields)
+        df = handler.process_template(df)
+    else:
+        # Use default template generation for other doctypes
 
     try:
         response = requests.get(
