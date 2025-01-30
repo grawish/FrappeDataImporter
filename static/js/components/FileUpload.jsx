@@ -85,7 +85,7 @@ function FileUpload({ connectionId, onUpload }) {
 
       const response = await uploadFile(formData);
       if (response.status === "success") {
-        const importResponse = await fetch(`/api/import/${response.job_id}`, {
+        const importResponse = await fetch(`/api/import/${response.job_id}/${connectionId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

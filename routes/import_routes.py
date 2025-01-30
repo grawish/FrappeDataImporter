@@ -68,8 +68,8 @@ def upload_file():
             os.remove(filepath)
         return jsonify({"status": "error", "message": str(e)}), 400
 
-@api.route('/import/<job_id>', methods=['POST'])
-def import_data(job_id):
+@api.route('/import/<job_id>/<conn_id>', methods=['POST'])
+def import_data(job_id, conn_id):
     job = ImportJob.query.get_or_404(job_id)
     mapping = request.json.get('mapping', {})
 
@@ -124,13 +124,13 @@ def import_data(job_id):
             # Create records in Frappe using insert_many
             try:
                 # Get connection details from frappe_url
-                conn = FrappeConnection.query.filter_by(url=job.frappe_url).first()
+                conn = FrappeConnection.query.get_or_404(conn_id)
                 if not conn:
                     raise Exception("Connection not found for the given Frappe URL")
 
                 docs = [{"doctype": job.doctype, **record} for record in mapped_data]
                 response = requests.post(
-                    f"{job.frappe_url}/api/method/frappe.client.insert_many",
+                    f"{conn.url}/api/method/frappe.client.insert_many",
                     json={"docs": docs},
                     headers={
                         'Authorization': f'token {conn.api_key}:{conn.api_secret}',
