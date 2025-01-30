@@ -149,9 +149,9 @@ function FileUpload({ connectionId, onUpload }) {
         });
         const importData = await importResponse.json();
         if (importData.status === "success") {
-        onUpload(response.job_id);
-      } else {
-        if (response.validation_errors) {
+          onUpload(response.job_id);
+        }
+      } else if (response.validation_errors) {
           const errorList = response.validation_errors.map(error => 
             `Row ${error.row}: ${error.errors.join(', ')}`
           ).join('\n');
