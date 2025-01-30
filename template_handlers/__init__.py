@@ -25,5 +25,6 @@ class TemplateHandler(ABC):
             
         Returns:
             DataFrame: Processed template dataframe
+            
         """
         pass
