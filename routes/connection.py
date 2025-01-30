@@ -6,7 +6,6 @@ from . import api
 
 @api.route('/connect', methods=['POST'])
 def connect_frappe():
-    breakpoint()
     data = request.json
     try:
         # Check if connection already exists
