@@ -20,28 +20,26 @@ def get_field_mapping(key):
     else:
         return fieldname, None, None
 
+
 def validate_all(data_list):
-    all_errors = []
+    all_errors = ""
     for idx, data in enumerate(data_list):
         row_errors = validate(data)
         if row_errors and len(row_errors) > 0:
-            all_errors.append({
-                'row': idx + 1,
-                'errors': row_errors
-            })
+            all_errors += f"<b>Row {idx + 1}:</b>\n{row_errors}\n"
     return all_errors
 
+
 def validate(data):
-    errors = []
+    errors = ""
     for key in data.keys():
         fieldname, fieldtype, options = get_field_mapping(key)
         fieldvalue = data[key]
 
         if fieldtype == 'Select' and options:
             if fieldvalue not in options.split(', '):
-                errors.append(
-                    f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}."
-                )
+                errors+=f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}. \n"
+                
         elif fieldtype == 'Link' and options:
             connection_id = request.form.get('connection_id')
             conn = FrappeConnection.query.get_or_404(connection_id)
@@ -49,10 +47,6 @@ def validate(data):
                 continue
 
             try:
-                print("params",{
-                         "doctype": options,
-                         "docname": fieldvalue,
-                     })
                 response = requests.get(
                     f"{conn.url}/api/method/frappe.client.validate_link?doctype={options}&docname={fieldvalue}&fields=[\"name\"]",
                     headers={
@@ -61,21 +55,9 @@ def validate(data):
                     } if conn.api_key and conn.api_secret else None)
 
                 if response.ok:
-                    if not response.json().get('name'):
-                        errors.append(
-                        {
-                            "error": "Not Found",
-                            "row": idx + 1,
-                            "field": fieldname,
-                            "value": fieldvalue,
-                            "options": options,
-                            "type": "Link",
-                            "message": f"Link '{fieldvalue}' not found in doctype '{options}'."
-                        }
-    
-                    )
+                    if not response.json().get('message', {}).get("name"):
+                        errors+=(f"Invalid value '{fieldvalue}' for field '{fieldname}'.\n")
 
             except Exception as e:
-                errors.append(
-                    f"Error validating link for {fieldname}: {str(e)}")
+                errors+=f"Error validating link for {fieldname}:{str(e)} \n"
     return errors
