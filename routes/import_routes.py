@@ -122,6 +122,11 @@ def import_data(job_id):
 
             # Create records in Frappe using insert_many
             try:
+                # Get connection details from frappe_url
+                conn = FrappeConnection.query.filter_by(url=job.frappe_url).first()
+                if not conn:
+                    raise Exception("Connection not found for the given Frappe URL")
+
                 docs = [{"doctype": job.doctype, **record} for record in mapped_data]
                 response = requests.post(
                     f"{job.frappe_url}/api/method/frappe.client.insert_many",
