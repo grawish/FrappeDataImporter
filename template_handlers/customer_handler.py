@@ -21,4 +21,5 @@ class CustomerTemplateHandler(TemplateHandler):
 
     def process_template(self, df):
         # Add any customer-specific processing here
+        
         return df
