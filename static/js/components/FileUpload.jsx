@@ -169,7 +169,7 @@ function FileUpload({ connectionId, onUpload }) {
     <Card>
       <CardContent>
         <Typography variant="h5" gutterBottom>Upload Data File</Typography>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 2 }}><div dangerouslySetInnerHTML={{ __html: error }} /></Alert>}
 
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" gutterBottom>Select Doctype</Typography>

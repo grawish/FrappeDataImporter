@@ -1,4 +1,5 @@
 import requests
+import math
 from models import FrappeConnection
 from flask import request
 
@@ -24,21 +25,23 @@ def get_field_mapping(key):
 def validate_all(data_list):
     all_errors = ""
     for idx, data in enumerate(data_list):
-        row_errors = validate(data)
+        row_errors = validate_and_create(data)
         if row_errors and len(row_errors) > 0:
-            all_errors += f"<b>Row {idx + 1}:</b>\n{row_errors}\n"
+            all_errors += f"<b>Row {idx + 1}:</b><br>{row_errors}<br>"
     return all_errors
 
 
-def validate(data):
+def validate_and_create(data):
     errors = ""
     for key in data.keys():
         fieldname, fieldtype, options = get_field_mapping(key)
         fieldvalue = data[key]
 
+        if type(fieldvalue) is float and math.isnan(fieldvalue):
+            continue
         if fieldtype == 'Select' and options:
             if fieldvalue not in options.split(', '):
-                errors+=f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}. \n"
+                errors+=f"Invalid value '{fieldvalue}' for field '{fieldname}'. Valid options are: {options}. <br>"
                 
         elif fieldtype == 'Link' and options:
             connection_id = request.form.get('connection_id')
@@ -56,8 +59,27 @@ def validate(data):
 
                 if response.ok:
                     if not response.json().get('message', {}).get("name"):
-                        errors+=(f"Invalid value '{fieldvalue}' for field '{fieldname}'.\n")
+                        # errors+=(f"Invalid value '{fieldvalue}' for field '{fieldname}'.<br>")
+                        creation_request = requests.post(
+                            f"{conn.url}/api/method/frappe.client.insert",
+                            data={
+                                "doc": {
+                                    "doctype": options,
+                                    "name": fieldvalue,
+                                    "owner": "Administrator"
+                                }
+                            },
+                            headers={
+                                'Authorization':
+                                f'token {conn.api_key}:{conn.api_secret}'
+                            }
+                        )
+                        print(creation_request.json())
+                        if not creation_request.ok:
+                            errors+=(f"Error creating link '{fieldvalue}' for field '{fieldname}'.<br>")
+                            
+                        
 
             except Exception as e:
-                errors+=f"Error validating link for {fieldname}:{str(e)} \n"
+                errors+=f"Error validating link for {fieldname}:{str(e)} <br>"
     return errors
